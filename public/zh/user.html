@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="shortcut icon" href="../img/icon/lenglian.ico">
+  <link rel="stylesheet" href="../css/bootstrap.min.css">
+  <link rel="stylesheet" href="../css/bootstrap-table.css">
+  <link rel="stylesheet" href="../font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../publicJS/jquery-2.1.0.js"></script>
+  <script src="../publicJS/bootstrap.min.js"></script>
+  <script src="../publicJS/bootstrap-table.js"></script>
+  <script src="../publicJS/bootstrap-table-zh-CN.min.js?v=20191213"></script>
+  <script src="../publicJS/tableExport.min.js?v=20191213"></script>
+  <script src="../publicJS/bootstrap-table-export.min.js?v=20191213"></script>
+  <script src="../publicJS/reqDomain.js"></script>
+  <script src="../plugs/layer/layer.js"></script>
+  <script src="js/function.js"></script>
+  <script src="js/assembly.js"></script>
+  <style>
+    /* 页面效果 */
+    #main{background: white;}
+    .indexTable{position: relative;margin-top: 20px;}
+    .indexTable table tr.bg td{background-color: #e6e6e6;}
+    /* 弹框效果 */
+    .mask>div{width: 800px;height: 450px;position: absolute;top: 50%;left: 50%;margin: -225px 0 0 -400px;background-color: #fff;overflow: hidden;border: 1px solid #45C5F8;border-radius: 10px;}
+    .mask_table{width: 370px;margin: 20px auto;}
+    .mask_table td{text-align: right;font-size: 14px;}
+    .mask_table td .form-control{border: 1px solid #D9D9D9;padding: 2px 8px;margin: 5px 0 5px 20px;width: 200px;resize: none;}
+    .mask_table td input,.mask_table td select{height: 25px;}
+    #userRoles{padding-left: 20px;}
+    #userRoles label{margin-bottom: 0;float: left;margin-right: 10px;}
+    #userRoles label input{margin-bottom: 0;float: left;margin-right: 5px;}
+    #userRoles label>*{float: left;line-height: 30px;}    
+  </style>
+</head>
+<body>
+  <div id="header"></div>
+  <div id="manageNav"></div>
+  <div id="main">
+    <!-- 面包屑 -->
+    <ol class="breadcrumb">
+      <li><a href="#">用户</a></li>
+      <li class="active">用户列表</li>
+    </ol>
+     <!-- 操作组 -->
+     <div id="operationGroup">
+      <span class="op_btn" onclick="addUser()">添加</span>
+      <span class="op_btn" onclick="changeUser()">修改</span>
+      <span class="op_btn" onclick="deleteUser()">删除</span>	
+    </div>
+    <!-- 表格 -->
+    <div class="indexTable">
+      <table id="indexTable" data-toggle="table"></table>
+    </div>
+     <!-- 弹框 -->
+     <div class="mask"></div>
+  </div>
+  <script>
+    $(function(){
+      // 页面初始化
+      pageInit();
+      // 初始化头部
+      new Header('#header');
+      // 初始化管理导航
+      new ManageNav('#manageNav');
+      // 获取角色列表
+      getRoleList();
+      // 获取部门列表
+      // getdeptList();
+      // 获取用户列表
+      // userList();
+    })
+  </script>
+  <script>
+    var tableRow = null;
+    var roleList = null;
+    var deptList = null;
+    var userInfo = null;
+    // 页面初始化
+    function pageInit(){
+      tableRow = null;
+      roleList = null;
+      deptList = null;
+      userInfo = null;
+    }
+    // 部门列表
+    function getdeptList(){
+      $.ajax({
+        type: "POST",
+        url: reqDomain + "/dept/dept_listing",
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function (data) {
+          if(data.code == '200'){
+            deptList = data.result
+            userList()
+          }
+        }
+      });
+    }
+    // 获取角色列表
+    function getRoleList(){
+      $.ajax({
+        type: "POST",
+        url: reqDomain + "/dept/role_list",
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function (data) {
+          if(data.code == '200'){
+            roleList = data.result;
+            getdeptList()
+          }
+        }
+      });
+    }
+    // 用户列表
+    function userList(){
+      $.ajax({
+        type: "POST",
+        url: reqDomain + "/dept/user_listing",
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function (data) {
+          if(data.code == '200'){
+            $("#indexTable").bootstrapTable('load',data.result)
+          }
+        }
+      });
+    }
+    $("#indexTable").bootstrapTable({
+      sidePagination: "client",
+      showExport: true,
+      exportDataType: 'all',
+      clickToSelect: true,
+      toolbar: '#operationGroup',
+      pagination: true,
+      search: true,
+	    searchTimeOut: 700,
+      paginationLoop: true,
+      pageNumber: 1,
+      pageSize: 15,
+      height: document.getElementsByTagName('body')[0].scrollHeight-200,
+      columns: [{
+        title: '序号',
+        formatter: function(value, row, index) {
+          return index + 1;
+        }
+      }, {
+        field: 'user_name',
+        title: '登录名'
+      }, {
+        field: 'real_name',
+        title: '姓名'
+      }, {
+        field: 'gender',
+        title: '性别'
+      }, {
+        field: 'tel',
+        title: '电话'
+      }, {
+        field: 'email',
+        title: '邮箱'
+      },{
+        field: 'department_name',
+        title: '部门名称',
+      },{
+        field: 'role_id',
+        title: '用户角色',
+        formatter: function(value){
+          if(value == undefined || value == null){
+            return '-'
+          }
+          var arr = value.split(',')
+          var str = '';
+          for(var i=0;i<roleList.length;i++){
+            for(var j=0;j<arr.length;j++){
+              if(roleList[i].id == arr[j]){
+                str += roleList[i].role_name+' '
+              }
+            }
+          }
+          return str;
+        }
+      },{
+        field: 'id',
+        title: 'id',
+        visible: false
+      }]
+    });
+    $('#indexTable').on('click-row.bs.table',function(e,row,element){
+      $(element).addClass('bg').siblings().removeClass('bg');
+      tableRow = row;
+    })
+    // 添加用户
+    function addUser(){
+      $('.mask').show();
+      new AddUser();
+    }
+    function AddUser(){
+      this.init();
+    }
+    AddUser.prototype.init = function(){
+      var div = document.createElement('div');
+      var str = '<div class="mask_title">添加用户<span class="close" onclick="closeMask()">×</span></div>';
+      str += '<div class="mask_main"><table class="mask_table"><tr><td>登录名</td><td><input type="text" class="form-control" id="userName"></td></tr>';
+      str += '<tr><td>姓名</td><td><input type="text" class="form-control" id="realName"></td></tr>';
+      str += '<tr><td>密码</td><td><input type="text" class="form-control" id="userPassword"></td></tr>';
+      str += '<tr><td>电话</td><td><input type="text" class="form-control" id="tel"></td></tr>';
+      str += '<tr><td>邮箱</td><td><input type="text" class="form-control" id="email"></td></tr>';
+      str += '<tr><td>性别</td><td><select class="form-control" id="gender"><option value="男">男</option><option value="女">女</option></select></td></tr>';
+      str += '<tr><td>用户部门</td><td><select class="form-control" id="departmentID">';
+        for(var i=0;i<deptList.length;i++){
+          str += '<option value="'+deptList[i].id+'">'+deptList[i].title+'</option>'
+        }
+      str += '</select></td></tr>';
+      str += '<tr><td>用户角色</td><td id="userRoles">'
+        for(var i=0;i<roleList.length;i++){
+          str += '<label><input type="checkbox" value="'+roleList[i].id+'"/><span>'+roleList[i].role_name+'</span></label>';
+        }
+      str += '</td></td></table>';
+      str += '<div class="myform_button"><button type="button" class="btn btn-info" onclick="userAdd()">保存</button> </div></div>';  
+      div.innerHTML = str;
+      document.getElementsByClassName('mask')[0].appendChild(div);    
+    }
+    // 用户添加保存
+    function userAdd(){
+      if($('#userName').val() == '' || $('#realName').val() == ''){
+        layer.alert('登录名和姓名不能为空！');
+        return false;
+      }
+      var userRoles = [];
+      $('#userRoles input').each(function(i,v){
+        if($(this).prop('checked') == true){
+          userRoles.push($(this).val())
+        }
+      })
+      $.ajax({
+        type: "POST",
+        url: reqDomain + "/dept/user_save",
+        data:{
+          user_name: $('#userName').val(),
+          real_name: $('#realName').val(),
+          user_password: $('#userPassword').val(),
+          tel: $('#tel').val(),
+          email: $('#email').val(),
+          gender: $('#gender').val(),
+          role_id: userRoles,
+          branch_id: $('#departmentID').val()
+        },
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function (data) {
+          if(data.code == '200'){
+            layer.alert('用户添加成功！');
+            closeMask();
+            userList();
+            tableRow = null;
+          }
+        }
+      })
+    }
+    // 获取用户信息
+    function getUserInfo(){
+      $.ajax({
+        type: "POST",
+        url: reqDomain + "/dept/user_info",
+        data:{
+          itemID: tableRow.id          
+        },
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function (data) {
+          if(data.code == '200'){
+            userInfo = data.result
+            // 显示修改用户信息弹框
+            $('.mask').show();
+            new ChangeUser();
+          }
+        }
+      })
+    }
+    // 修改用户
+    function changeUser(){
+      if(tableRow == null){
+        layer.alert('请选择一个用户！');
+        return false;
+      }
+      getUserInfo();      
+    }
+    function ChangeUser(){
+      this.init();
+    }
+    ChangeUser.prototype.init = function(){
+      var div = document.createElement('div');
+      var str = '<div class="mask_title">添加用户<span class="close" onclick="closeMask()">×</span></div>';
+      str += '<div class="mask_main"><table class="mask_table"><tr><td>登录名</td><td><input type="text" class="form-control" id="userName"></td></tr>';
+      str += '<tr><td>姓名</td><td><input type="text" class="form-control" id="realName"></td></tr>';
+      str += '<tr><td>电话</td><td><input type="text" class="form-control" id="tel"></td></tr>';
+      str += '<tr><td>邮箱</td><td><input type="text" class="form-control" id="email"></td></tr>';
+      str += '<tr><td>性别</td><td><select class="form-control" id="gender"><option value="男">男</option><option value="女">女</option></select></td></tr>';
+      str += '<tr><td>用户部门</td><td><select class="form-control" id="departmentID">';
+        for(var i=0;i<deptList.length;i++){
+          str += '<option value="'+deptList[i].id+'">'+deptList[i].title+'</option>'
+        }
+      str += '</select></td></tr>';
+      str += '<tr><td>用户角色</td><td id="userRoles">'
+        for(var i=0;i<roleList.length;i++){
+          str += '<label><input type="checkbox" value="'+roleList[i].id+'"/><span>'+roleList[i].role_name+'</span></label>';
+        }
+      str += '</td></td></table>';
+      str += '<div class="myform_button"><button type="button" class="btn btn-info" onclick="userChange()">保存</button></div></div>';  
+      div.innerHTML = str;
+      document.getElementsByClassName('mask')[0].appendChild(div);
+      console.log(userInfo)
+      $('#userName').val(userInfo.user_name);
+      $('#realName').val(userInfo.real_name);
+      $('#tel').val(userInfo.tel);
+      $('#email').val(userInfo.email);
+      $('#gender').val(userInfo.gender);
+      $('#departmentID').val(userInfo.branch_id);
+      $('#userRoles input').each(function(i){
+        for(var i=0;i<userInfo.role_id.length;i++){          
+          if(userInfo.role_id[i] == $(this).val()){
+            $(this).prop('checked','checked')
+          }
+        }
+      })
+    }
+    // 用户修改保存
+    function userChange(){
+      if($('#userName').val() == '' || $('#realName').val() == ''){
+        layer.alert('登录名和姓名不能为空！');
+        return false;
+      }
+      var userRoles = [];
+      $('#userRoles input').each(function(i,v){
+        if($(this).prop('checked') == true){
+          userRoles.push($(this).val())
+        }
+      })
+      $.ajax({
+        type: "POST",
+        url: reqDomain + "/dept/user_save",
+        data:{
+          id: tableRow.id,
+          user_name: $('#userName').val(),
+          real_name: $('#realName').val(),
+          user_password: $('#userPassword').val(),
+          tel: $('#tel').val(),
+          email: $('#email').val(),
+          gender: $('#gender').val(),
+          role_id: userRoles,
+          branch_id: $('#departmentID').val()
+        },
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function (data) {
+          if(data.code == '200'){
+            layer.alert('用户修改成功！');
+            closeMask();
+            userList();
+            tableRow = null;
+          }
+        }
+      })
+    }
+    // 删除用户
+    function deleteUser(){
+      if(tableRow == null){
+        layer.alert('请选择一个用户！');
+        return false;
+      }
+      layer.confirm('确定要删除该用户么？',function(){
+        $.ajax({
+          type: "POST",
+          url: reqDomain + "/dept/user_delete",
+          data:{
+            id: tableRow.id,
+          },
+          xhrFields: {
+            withCredentials: true
+          },
+          success: function (data) {
+            if(data.code == '200'){
+              layer.alert('用户删除成功！');
+              userList();
+              tableRow = null;
+            }
+          }
+        })
+      })
+    }
+    // 点击叉号
+    function closeMask(){
+      $('.mask').fadeOut(300);
+      $('.mask>div').remove();
+    }
+ </script>
+</body>
+</html> 

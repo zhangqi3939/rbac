@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="shortcut icon" href="../img/icon/lenglian.ico">
+  <link rel="stylesheet" href="../css/bootstrap.min.css">
+  <link rel="stylesheet" href="../css/bootstrap-table.css">
+  <link rel="stylesheet" href="../css/bootstrap-multiselect.min.css">
+  <link rel="stylesheet" href="../font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../publicJS/jquery-2.1.0.js"></script>
+  <script src="../publicJS/bootstrap.min.js"></script>
+  <script src="../publicJS/bootstrap-table.js"></script>
+  <script src="../publicJS/bootstrap-multiselect.min.js"></script>
+  <script src="../publicJS/reqDomain.js"></script>
+  <script src="../plugs/layer/layer.js"></script>
+  <script src="js/function.js"></script>
+  <script src="js/assembly.js"></script>
+  <style>
+    /* 页面效果 */
+    #main{background: white;}
+    .indexTable{position: relative;margin-top: 20px;}
+    .indexTable table tr.bg td{background-color: #e6e6e6;}
+    /* 弹框效果 */
+    .mask>div{width: 800px;height: 220px;position: absolute;top: 50%;left: 50%;margin: -110px 0 0 -400px;background-color: #fff;overflow: hidden;border: 1px solid #45C5F8;border-radius: 10px;}
+    .mask_table{width: 370px;margin: 35px auto;}
+    .mask_table td{text-align: right;font-size: 14px;}
+    .mask_table td .form-control{border: 1px solid #D9D9D9;padding: 2px 8px;margin: 5px 0 5px 20px;width: 200px;resize: none;}
+    .mask_table td input,.mask_table td select{height: 25px;}
+    .list-group{margin: 0;}
+    .list-group li.list-group-item{padding: 0;border-radius: 0;border-left: none;}
+    .badge{float: none!important;background-color: transparent;color: #cccccc;}
+    .badge:hover{color: red;}
+    /* 添加分组弹框 */
+    .mask .addG{height:400px;margin-top: -200px;}
+    .addG p{margin-top: 20px;text-align: center;font-weight: bold;}
+    #groupList+div{margin: 20px auto 170px;display: block;height: 34px;}
+  </style>
+</head>
+<body>
+  <div id="header"></div>
+  <div id="manageNav"></div>
+  <div id="main">
+    <!-- 面包屑 -->
+    <ol class="breadcrumb">
+      <li><a href="#">工位</a></li>
+      <li class="active">工位列表</li>
+    </ol>
+     <!-- 操作组 -->
+     <div id="operationGroup">
+      <span class="op_btn" onclick="addStation()">添加</span>
+      <span class="op_btn" onclick="changeStation()">修改</span>
+      <span class="op_btn" onclick="deleteStation()">删除</span>	
+    </div>
+    <!-- 表格 -->
+    <div class="indexTable">
+      <table id="indexTable">
+        <thead>
+          <th>序号</th>
+          <th>工位名称</th>
+          <th>工位id</th>
+          <th>分配分组</th>
+          <th>排序</th>
+        </thead>
+        <tbody id="workTbody"></tbody>
+      </table>
+    </div>
+     <!-- 弹框 -->
+     <div class="mask"></div>
+  </div>
+  <script>
+    $(function(){
+      // 页面初始化
+      pageInit();
+      // 初始化头部
+      new Header('#header');
+      // 初始化管理导航
+      new ManageNav('#manageNav');
+      // 获取分组列表
+      group_list();
+      // 获取工位列表
+      stationList();
+    })
+  </script>
+  <script>
+    var tableRow = null;
+    var groupList = null;
+    // 页面初始化
+    function pageInit(){
+      tableRow = null;
+      groupList = null;
+    }
+    //分组列表
+    function group_list(){
+      $.ajax({
+        async: false,
+        type : 'POST',
+        url : reqDomain + "/device/group_listing",
+        data: {},
+        dataType:"json",
+        xhrFields:{
+          withCredentials: true
+        },
+        success:function(data){
+          if(data.code == 200){
+            groupList = data.result;
+          }
+        }				
+      });
+    }
+    // 工位列表
+    function stationList(){
+      $.ajax({
+        async: false,
+        type: "POST",
+        url: reqDomain + "/schedule/station_listing",
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function (data) {
+          if(data.code == '200'){
+              $("#indexTable").bootstrapTable('destroy')
+            var str = ''
+            $.each(data.result,function(i,v){
+              str += '<tr><td>'+(i+1)+'</td>';
+              str += '<td>'+v.name+'</td>';
+              str += '<td>'+v.id+'</td>';
+              str += '<td id="'+v.id+'"><ul class="list-group">';
+              $.each(v.groups,function(item,value){
+                str += '<li class="list-group-item" id="'+value.group_id+'">'+value.group_name+'<span class="badge">&times;</span></li>'
+              })
+              str += '</ul><button class="btn btn-primary btn-xs addgroup">添加分组</button></td>'
+              str += '<td>'+v.sequence+'</td>'
+              str += '</tr>';
+            })
+            $('#workTbody').html(str);
+            $("#indexTable").bootstrapTable('destroy').bootstrapTable({
+              sidePagination: "client",
+              showExport: true,
+              exportDataType: 'all',
+              clickToSelect: true,
+              align:'center',
+              column:[]
+            });
+            $('#indexTable').on('click-row.bs.table',function(e,row,element){
+              $(element).addClass('bg').siblings().removeClass('bg');
+              tableRow = row;
+            })
+            // 删除分组
+            $('.badge').click(function(){
+              var station_id = $(this).parents('td').attr('id');
+              var group_id = $(this).parents('li').attr('id');
+              layer.confirm('你确定要删除该分组么？',function(){
+                $.ajax({
+                  type: "POST",
+                  url: reqDomain + "/schedule/station_group_delete",
+                  data: {
+                    station_id: station_id,
+                    group_id: group_id
+                  },
+                  xhrFields: {
+                    withCredentials: true
+                  },
+                  success:function(data){
+                    if(data.code == 200){
+                      stationList();
+                      layer.alert('删除成功！');
+                    }else if(data.code == 400 ){
+                      layer.alert(data.reason);
+                    }
+                  }
+                })
+              })
+            })
+            // 添加分组
+            $(".addgroup").click(function(){
+              var station_id = $(this).parents('td').attr('id');
+              $('.mask').show();
+              new AddGrounp(station_id)
+            })
+          }
+        }
+      });
+    }
+    // 添加工位
+    function addStation(){
+      $('.mask').show();
+      new AddStation();
+    }
+    function AddStation(){
+      this.init();
+    }
+    AddStation.prototype.init = function(){
+      var div = document.createElement('div');
+      var str = '<div class="mask_title">添加工位<span class="close" onclick="closeMask()">×</span></div>';
+      str += '<div class="mask_main"><table class="mask_table"><tr><td>工位名称</td><td><input type="text" class="form-control" id="name"></td></tr>';
+      str += '<tr><td>排序</td><td><input type="text" class="form-control" id="sequence"></td></tr></table>';
+      str += '<div class="myform_button"><button type="button" class="btn btn-info" onclick="stationAdd()">保存</button></div></div>';  
+      div.innerHTML = str;
+      document.getElementsByClassName('mask')[0].appendChild(div);   
+    }
+    // 工位添加保存
+    function stationAdd(){
+      if($('#name').val() == ''){
+        layer.alert('工位名称不能为空！');
+        return false;
+      }
+      $.ajax({
+        type: "POST",
+        url: reqDomain + "/schedule/station_save",
+        data:{
+          name: $('#name').val(),
+          sequence: $('#sequence').val(),
+        },
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function (data) {
+          if(data.code == '200'){
+            layer.alert('工位添加成功！');
+            closeMask();
+            stationList();
+            tableRow = null;
+          }
+        }
+      })
+    }
+    // 修改工位
+    function changeStation(){
+      if(tableRow == null){
+        layer.alert('请选择一个工位！');
+        return false;
+      }
+      $('.mask').show();
+      new ChangeStation();
+    }
+    function ChangeStation(){
+      this.init();
+    }
+    ChangeStation.prototype.init = function(){
+      var div = document.createElement('div');
+      var str = '<div class="mask_title">修改工位<span class="close" onclick="closeMask()">×</span></div>';
+      str += '<div class="mask_main"><table class="mask_table"><tr><td>工位名称</td><td><input type="text" class="form-control" id="name"></td></tr>';
+      str += '<tr><td>排序</td><td><input type="text" class="form-control" id="sequence"></td></tr></table>';
+      str += '<div class="myform_button"><button type="button" class="btn btn-info" onclick="stationChange()">保存</button></div></div>';  
+      div.innerHTML = str;
+      document.getElementsByClassName('mask')[0].appendChild(div);
+      $('#name').val(tableRow[1]);
+      $('#sequence').val(tableRow[4]);
+    }
+    // 工位修改保存
+    function stationChange(){
+      if($('#name').val() == ''){
+        layer.alert('工位名称不能为空！');
+        return false;
+      }
+      $.ajax({
+        type: "POST",
+        url: reqDomain + "/schedule/station_save",
+        data:{
+          id: tableRow[2],
+          name: $('#name').val(),
+          sequence: $('#sequence').val(),
+        },
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function (data) {
+          if(data.code == '200'){
+            layer.alert('工位修改成功！');
+            closeMask();
+            stationList();
+            tableRow = null;
+          }
+        }
+      })
+    }
+    // 删除工位
+    function deleteStation(){
+      if(tableRow == null){
+        layer.alert('请选择一个工位！');
+        return false;
+      }
+        console.log(tableRow);
+      layer.confirm('确定要删除该工位么？',function(){
+        $.ajax({
+          type: "POST",
+          url: reqDomain + "/schedule/station_delete",
+          data:{
+            id: tableRow[2],
+
+          },
+
+          xhrFields: {
+            withCredentials: true
+          },
+          success: function (data) {
+            if(data.code == '200'){
+              layer.alert('工位删除成功！');
+              stationList();
+              tableRow = null;
+            }
+          }
+        })
+      })
+    }
+    // 点击叉号
+    function closeMask(){
+      $('.mask').fadeOut(300);
+      $('.mask>div').remove();
+    }
+    // 添加分组
+    function AddGrounp(station_id){
+      this.station_id = station_id;
+      group_list();
+      this.init();
+    }
+    AddGrounp.prototype.init = function(){
+      var str = '';
+      var div = document.createElement('div');
+      div.className = 'addG';
+      div.style.overflowY = 'auto';
+      var str = '<div class="mask_title">修改分组<span class="close" onclick="closeMask()">×</span></div>';
+      str += '<p>选择以下分组到工位中</p>';
+      str += '<select id="groupList" class="form-control" multiple>';
+      $.each(groupList,function(i,v){
+        if(v.station_id == 0){
+          str += '<option value="'+v.group_id+'">'+v.name+'</option>';
+        }
+      })
+      str += '</select>';
+      str += '<div class="myform_button"><button type="button" class="btn btn-info" onclick="groupChange('+this.station_id+')">保存</button></div></div>';  
+      div.innerHTML = str;
+      document.getElementsByClassName('mask')[0].appendChild(div);
+      $('#groupList').multiselect("destroy").multiselect({
+        buttonWidth: '200px', 
+        includeSelectAllOption: true,
+        enableFiltering: true,
+        filterPlaceholder: '搜索',
+        filterBehavior: 'text', //根据value或者text过滤
+        enableFullValueFiltering: true, //能否全字匹配
+        enableCaseInsensitiveFiltering: true, //不区分大小写
+        includeSelectAllOption: true, //全选
+        nonSelectedText: '最少选一个分组',
+        selectAllText: '全选', //全选的checkbox名称
+        selectAllNumber: false, //true显示allselect（6）,false显示allselect
+        selectAllName: 'select-all-name',
+        selectAllValue: 'select-all-value', //可以为strig或者数字
+        numberDisplayed: 1,  //当超过2个标签的时候显示n个被选中
+        maxHeight: 150,
+      });
+    }
+
+    function groupChange(station_id){
+      $.ajax({
+        type: "post",
+        url: reqDomain + "/schedule/station_group_add",
+        data:{
+          station_id: station_id,
+          group_id: $('#groupList').val()
+        },
+        xhrFields: {
+          withCredentials: true
+        },
+        success:function(data){
+          if(data.code == 200){
+            layer.alert('添加成功！');
+            stationList();
+            closeMask();
+          }
+        }
+      })
+    }
+ </script>
+</body>
+</html> 

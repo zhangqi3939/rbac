@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="shortcut icon" href="../img/icon/lenglian.ico">
+  <link rel="stylesheet" href="../css/bootstrap.min.css">
+  <link rel="stylesheet" href="../css/bootstrap-table.css">
+  <link rel="stylesheet" href="../css/bootstrap-multiselect.min.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../publicJS/jquery-2.1.0.js"></script>
+  <script src="../publicJS/bootstrap.min.js"></script>
+  <script src="../publicJS/bootstrap-table.js"></script>
+  <script src="../publicJS/bootstrap-multiselect.min.js"></script>
+  <script src="../publicJS/tableExport.min.js"></script>
+  <script src="../publicJS/bootstrap-table-export.min.js"></script>
+  <script src="../publicJS/reqDomain.js"></script>
+  <script src="../plugs/date/WdatePicker.js"></script>
+  <script src="../plugs/layer/layer.js"></script>
+  <script src="js/function.js"></script>
+  <script src="js/assembly.js"></script>
+  <style>
+    /* 页面效果 */
+    #main{background: white;}
+    #log_category{width: 150px;height: 40px;}
+    .indexTable{position: relative;margin-top: 20px;}
+    .indexTable table{width:100%;border-radius: 1px;border: 1px solid #ddd;}
+    .indexTable table th{padding: 8px;line-height: 24px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;font-weight: bold;border: 1px solid #ddd;border-bottom-width: 2px;}
+    .indexTable table td{padding: 8px;line-height: 1.42857143;overflow: hidden;border: 1px solid #ddd;}
+		.t_left{float: left;padding-top: 6px;width: 50%;}
+		.t_left span{font-size: 14px;}
+		.t_left select{display: inline-block;padding: 6px 12px;border: 1px solid #ccc;color: #333;font-size: 14px;width: 65px;}
+		.t_right{float: right;}
+		.t_right a{font-size: 14px;padding: 6px 12px!important;}
+		.table_bottom{margin-bottom: 60px;}
+  </style>
+</head>
+<body>
+  <div id="header"></div>
+  <div id="nav"></div>
+  <div id="main">
+    <!-- 面包屑 -->
+    <ol class="breadcrumb">
+      <li><a href="cold.html">首页</a></li>
+      <li><a href="#">记录</a></li>
+      <li class="active">操作日志</li>
+    </ol>
+    <!-- 操作组 -->
+    <div id="operationGroup">
+      <select class="op_sel" id="log_category"></select>
+      <b>起止时间：</b>
+      <input type="text" id="startTime" class="op_input" onfocus="WdatePicker({ dateFmt:'yyyy-MM-dd HH:mm'})" placeholder="请选择开始时间" autocomplete="off">
+      <b>--</b>
+      <input type="text" id="endTime" class="op_input Wdate" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm',minDate:'#F{$dp.$D(\'startTime\')}'});" placeholder="请选择结束时间" autocomplete="off">
+      <span class="op_btn" onclick="log_list(1)" style="color:#1199D3;">查询</span>	
+    </div>
+    <!-- 日志表格 -->
+    <div class="indexTable">
+      <table id="indexTable">
+          <thead>
+            <tr class="warning" id="thead_log">
+
+            </tr>
+          </thead>
+          <tbody id="tbody_log">
+
+          </tbody>
+      </table>
+    </div>
+    <div class="table_bottom">
+      <div class="t_left">
+        <span id="index_index"></span>
+        <span id="log_span6"> 每页显示</span>
+        <select class="form-control" id="perPage">
+          <option value="10">10</option>
+          <option value="15">15</option>
+          <option value="20">20</option>
+          <option value="25">25</option>
+          <option value="30">30</option>
+        </select>
+        <span></span>
+      </div>
+      <div class="t_right">
+        <nav aria-label="Page navigation">
+          <ul class="pagination" id="page">
+
+          </ul>
+        </nav>
+      </div>
+      <div class="clear"></div>
+    </div>
+  </div>
+  <script>
+    $(function(){
+    	$('#home').prop('href',window.localStorage.getItem('homePage')+'.html')
+      // 初始化头部
+      new Header('#header');
+      // 初始化导航
+      new Nav('#nav');
+      // 日志类型列表
+      logCategory();
+    })
+  </script>
+  <script>
+    // 日志类型列表
+    function logCategory(){
+      $.ajax({
+        type: 'POST',
+        url: reqDomain + "/systemLog/log_category",
+        data: {},
+        dataType: "json",
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function(data) {
+          if(data.code == 200) {
+            var html = "";
+            for(var i = 0; i < data.result.length; i++) {
+              html += "<option value='" + data.result[i].catCode + "'>" + data.result[i].catName + "</option>"
+            }
+            $("#log_category").append(html);
+            $("#log_category").multiselect({
+              buttonWidth: '150px',
+              includeSelectAllOption: true,
+              enableFiltering: true,
+              filterPlaceholder: '搜索',
+            });
+            log_list(1);
+          }
+        }
+      })
+    }
+    $('#perPage').change(function(){
+      log_list(1);
+    })
+    // 获取日志列表
+    function log_list(page){
+      $.ajax({
+        async: false,
+        cache: false,
+        type: "POST",
+        url: reqDomain + "/systemLog/log_list",
+        data: {
+          'page':page,
+          'logCategory':$("#log_category").val(),
+          'startTime':$("#startTime").val(),
+          'endTime':$("#endTime").val(),
+          'perPage':$("#perPage").val()
+        },
+        dataType: "json",
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function (data) {
+          if(data.code == '200'){
+            var html_thead_log = "";
+            var html_tbody_log = "";
+            var html_index_index = "";
+            var html_page = "";
+            var total = data.result.total;
+            var list = data.result.dataList;
+            if(list.length == 0) {
+              html_tbody_log = "数据为空";
+            }
+            if($("#log_category").val() == "login") {
+              html_thead_log += "<th style='width:3%'>序号</th>" +
+                "<th>用户</th>" +
+                "<th>姓名</th>" +
+                "<th>时间</th>" +
+                "<th>操作类型</th>" +
+                "<th>IP</th>";
+              for(var i = 0; i < list.length; i++) {
+                html_tbody_log += "<tr class='pt'>" +
+                  "<td>" + parseInt(i + 1) + "</td>" +
+                  "<td>" + list[i].user_name + "</td>" +
+                  "<td>" + list[i].real_name + "</td>" +
+                  "<td>" + formatTime(parseInt(list[i].insert_time))+ "</td>" +
+                  "<td>" + list[i].remarks + "</td>" +
+                  "<td>" + list[i].user_ip + "</td>" +
+                  "</tr>";
+              }
+            } else if($("#log_category").val() == "cooler_control") {
+              html_thead_log += "<th style='width:3%'>序号</th>" +
+                "<th>设备id</th>" +
+                "<th>操作类型</th>" +
+                "<th>操作结果</th>" +
+                "<th>用户</th>" +
+                "<th>时间</th>";
+              var flag_change_text = "";
+              var opValue_text = "";
+              for(var i = 0; i < list.length; i++) {
+                if(list[i].flag_change == 1) {
+                  flag_change_text = "命令下发";
+                } else if(list[i].flag_change == 2) {
+                  flag_change_text = "服务器正在处理";
+                } else if(list[i].flag_change == 3) {
+                  flag_change_text = "正确响应";
+                } else if(list[i].flag_change == 4) {
+                  flag_change_text = "命令被冷机拒绝";
+                } else if(list[i].flag_change == 5) {
+                  flag_change_text = "终端与冷机通讯异常";
+                } else if(list[i].flag_change == 11) {
+                  flag_change_text = "远程新风系统无法打开：温度低于零度";
+                } else if(list[i].flag_change == 12) {
+                  flag_change_text = "远程新风系统无法打开：冷机非制冷或者制热模式";
+                };
+                if(list[i].opCode == 2050) {
+                  if(list[i].opValue == 1) {
+                    opValue_text = "远程开机";
+                  } else if(list[i].opValue == 0) {
+                    opValue_text = "远程关机";
+                  }
+                } else if(list[i].opCode == 2060) {
+                  opValue_text = "设置温度：" + list[i].opValue;
+                } else if(list[i].opCode == 2061) {
+                  opValue_text = "初始化除霜";
+                } else if(list[i].opCode == 2062) {
+                  opValue_text = "清除警告";
+                }
+                html_tbody_log += "<tr class='pt'>" +
+                  "<td>" + parseInt(i + 1) + "</td>" +
+                  "<td>" + list[i].box_id + "</td>" +
+                  "<td>" + opValue_text + "</td>" +
+                  "<td>" + flag_change_text + "</td>" +
+                  "<td>" + list[i].user_name + "</td>" +
+                  "<td>" + formatTime(parseInt(list[i].insert_time)) + "</td>" +
+                  "</tr>";
+              }
+            } else if($("#log_category").val() == "system_operation") {
+              html_thead_log += "<th style='width:3%'>序号</th>" +
+                "<th>用户</th>" +
+                "<th>姓名</th>" +
+                "<th>时间</th>" +
+                "<th>操作类型</th>" +
+                "<th>操作对象</th>" +
+                "<th>IP</th>";
+              for(var i = 0; i < list.length; i++) {
+                html_tbody_log += "<tr class='pt'>" +
+                  "<td>" + parseInt(i + 1) + "</td>" +
+                  "<td>" + list[i].name + "</td>" +
+                  "<td>" + list[i].real_name + "</td>" +
+                  "<td>" + formatTime(parseInt(list[i].insert_time)) + "</td>" +
+                  "<td>" + list[i].operation + "</td>" +
+                  "<td>" + list[i].object_id + "</td>" +
+                  "<td>" + list[i].user_ip + "</td>" +
+                  "</tr>";
+              }
+            }
+
+            $("#thead_log").html(html_thead_log);
+            $("#tbody_log").html(html_tbody_log);
+            //第几到第几条数据
+            var index = (page - 1) * 10 + 1;
+            var index1 = index + list.length - 1;
+            var html_index_index = "第" + index + "-" + index1 + "条 共" + total + "条";
+            $("#index_index").html("");
+            $("#index_index").append(html_index_index);
+            //分页
+            var page1 = page - 1;
+            var page2 = page + 1;
+            if(page > 1 && page <= Math.ceil(total / $("#perPage").val())) {
+              html_page += "<li onclick='log_list(" + page1 + ")'>";
+            } else {
+              html_page += "<li class='disabled'>";
+            }
+
+            html_page += "<a href='#' aria-label='Previous' aria-hidden='true'>&laquo;</a></li>";
+            for(var i = 1; i < Math.ceil(total / $("#perPage").val()) + 1; i++) {
+              if(i < page + 5 && i > page - 5) {
+                if(page == i) {
+                  html_page += "<li class='active'><a href='#' onclick='log_list(" + i + ")'>" + i + "</a></li>"
+                } else {
+                  html_page += "<li><a href='#' onclick='log_list(" + i + ")'>" + i + "</a></li>"
+                }
+
+              }
+            }
+            if(page >= 1 && page < Math.ceil(total / $("#perPage").val())) {
+              html_page += "<li onclick='log_list(" + page2 + ")'>";
+            } else {
+              html_page += "<li class='disabled'>";
+            };
+            html_page += "<a href='#' aria-label='Next' aria-hidden='true'>&raquo;</a></li>";
+            // $("#page").html("");
+            $("#page").html(html_page);
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>

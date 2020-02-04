@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="shortcut icon" href="../img/icon/lenglian.ico">
+  <link rel="stylesheet" href="../css/bootstrap.min.css?v=20191213">
+  <link rel="stylesheet" href="../css/bootstrap-table.css?v=20191213">
+  <link rel="stylesheet" href="../css/bootstrap-multiselect.min.css?v=20191213">
+  <link rel="stylesheet" href="../css/style.css?v=20191213">
+  <script src="../publicJS/jquery-2.1.0.js?v=20191213"></script>
+  <script src="../publicJS/bootstrap.min.js?v=20191213"></script>
+  <script src="../publicJS/bootstrap-table.js?v=20191213"></script>
+  <script src="../publicJS/bootstrap-table-zh-CN.min.js?v=20191213"></script>
+  <script src="../publicJS/tableExport.min.js?v=20191213"></script>
+  <script src="../publicJS/bootstrap-table-export.min.js?v=20191213"></script>
+  <script src="../publicJS/bootstrap-multiselect.min.js?v=20191213"></script>
+  <script src="../publicJS/reqDomain.js?v=20191213"></script>
+  <script src="../plugs/layer/layer.js?v=20191213"></script>
+  <script src="../plugs/date/WdatePicker.js?v=20191213"></script>
+  <script src="../publicJS/goodsCategory.js?v=20191213"></script>
+  <script src="js/function.js?v=20191213"></script>
+  <script src="js/assembly.js?v=20191213"></script>
+  <style>
+    /* 页面效果 */
+    #main{background: white;}
+    .opGroup{margin-bottom: 10px;}
+    .indexTable table tr.bg td{background-color: #e6e6e6;}
+    /* 弹框效果 */
+    .mask>div{width: 1200px;height: 500px;position: absolute;top: 50%;left: 50%;margin: -250px 0 0 -600px;background-color: #fff;border: 1px solid #45C5F8;border-radius: 10px;}
+    .myform_button{padding-top: 15px;}
+    /* 添加行程 */
+    .mask_main{padding: 10px 0;}
+    .travelItem{width: 25%;height: 400px;float: left;border-left: 1px solid #aaa;padding: 10px;}
+    .mask_main .travelItem:first-child{border: none;}
+    .travelItemTitle{text-align: center;font-weight: bold;font-size: 16px;margin: 0 0 10px 0;}
+    .mask_main form .form-group{margin: 5px 0;position: relative;}
+    .mask_main form .form-group>label{width: 70px;text-align: right;color: #333;font-weight: normal;font-size: 12px;}
+    .mask_main form .form-group>label.required::after{display: block;content: '*';color: red;position: absolute;left: 0;top: 5px;}
+    .mask_main form .form-group .form-control{width: 200px;height: 26px;font-size: 12px;padding: 4px 12px;}
+    /* 车站提示 */
+    .tip{position: absolute;left: 74px;width: 200px;height: 166px;overflow: auto;display: none;z-index: 100;}
+    .tip li{font-size: 12px;padding: 4px 12px;height: 26px;}
+    .tip li:hover{background-color: #e6e6e6;cursor: pointer;}    
+    /* 已选箱子列表 */
+    #goods_info dt{margin: 10px 0;}
+    #goods_info dd{position: relative;height: 26px;padding: 4px 12px;font-size: 12px;cursor: pointer;}
+    #goods_info dd.disabled::after{content: '';position: absolute;top: 0;left: 0;z-index: 100;width: 100;height: 100%;background: rgba(0,0,0,0.4);}
+    .goods_op{float: right;}
+    .goods_op button{margin-left: 5px;background: none;outline: none;border: none;}
+    .good_detail{width: 250px;position: absolute;bottom: 24px;background-color: white;border-radius: 4px;border: 1px solid #ddd;margin: 0;}
+    .good_detail li{font-size: 12px;color: #333;height: 26px;padding: 4px 12px;}
+    .good_detail li span{float: right;}
+    .good_detail li span:first-child{float: left;}
+    #changeGoodsCategory{position: absolute;width: 290px;right: 0;height: 26px;z-index: 100;display: none;}
+    #changeGoodsCategory::after{content: '';display: block;clear: both;}
+    #changeGoodsCategory select{float: left;width: 145px;}
+    #add_box{display: block;margin: 10px auto;}
+    .mask>.statusMark{width: 800px;height: 500px;margin: -250px 0 0 -400px;}
+    .statusTitle{text-indent: 2em;font-weight: bold;}
+    /* 步骤条 */
+    .steps{width: 750px;margin: 10px auto;}
+    .steps::after{content: '';display: block;clear: both;}
+    .steps>li{float: left;width: 20%;position: relative;cursor: pointer;}
+    .steps>li .step-text::after,.steps>li .step-text::before{width: 65px;height: 5px;background-color: #CDCDCD;position: absolute;content: '';top: 7px;}
+    .steps>li.active .step-text::after,.steps>li.active .step-text::before,
+    .steps>li:hover .step-text::after,.steps>li:hover .step-text::before{background-color: rgb(51, 136, 255);}
+    .steps>li .step-text::after{left: 0;}
+    .steps>li .step-text::before{right: 0;}
+    .steps>li span{display: block;}
+    .steps>li .step-text{margin: 0 auto;width: 20px;height: 20px;font-size: 16px;text-align: center;line-height: 20px;background-color: #CDCDCD;color: white;border-radius: 50%;}
+    .steps>li.active .step-text,
+    .steps>li:hover .step-text{background-color: rgb(51, 136, 255);}
+    .steps>li .step-content{margin-top: 5px;text-align: center;}
+    .step-info{position: absolute;background-color: white;z-index: 100;box-shadow: 0 0 5px silver;}
+    .step-info 
+    .step-info input{width: 150px!important;}
+    .step-info label{text-align: left!important;}
+    .step-info .tip{left: 0;width: 200px;}
+    /* 运单进度列表 */
+    .stepList{width: 350px;margin: 10px auto 0;height: 300px;overflow: auto;}
+    .stepList>li{padding-left: 40px;padding-top: 5px;position: relative;height: 50px;}
+    .stepList>li::after{display: block;content: '';height: 50px;width: 4px;background-color: rgb(51, 136, 255);position: absolute;top: 0;left: 8px;}
+    .stepList>li::before{display: block;content: '';position: absolute;width: 20px;height: 20px;background-color: rgb(51, 136, 255);border-radius: 50%;top: 0;left: 0;}
+    .stepList>li h3{font-size: 14px;margin-top: 0;margin-bottom: 5px;}
+    .stepList>li h3 span{float: right;}
+    .stepList>li h3 span button{margin-left: 5px;background: none;outline: none;border: none;}
+    .stepList>li p{font-size: 12px;margin: 0;}
+    .stepList>li .station{float: none;}
+    .step-change{position: absolute;top: 150px;right: 0px;top: 50px;width: 200px;}
+  </style>
+</head>
+<body>
+  <div id="header"></div>
+  <div id="nav"></div>
+  <div id="main">
+    <!-- 面包屑 -->
+    <ol class="breadcrumb">
+      <li><a href="">首页</a></li>
+      <li><a href="#">箱管</a></li>
+      <li class="active">行程列表</li>
+    </ol>
+    <!-- 操作组 -->
+    <div class="opGroup">
+      <select id="travel_status">
+        <option value="">全部状态</option>
+        <option value="0">未开始</option>
+        <option value="1">已装货</option>
+        <option value="2">已发车</option>
+        <option value="3">有过站</option>
+        <option value="4">已到站</option>
+        <option value="5">已卸货</option>
+      </select>
+      <b>发车起止时间：</b>
+      <input type="text" id="start_time" class="op_input" onfocus="WdatePicker({ dateFmt:'yyyy-MM-dd HH:mm:ss'})" placeholder="请选择开始时间" autocomplete="off">
+      <b>--</b>
+      <input type="text" id="end_time" class="op_input Wdate" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss',minDate:'#F{$dp.$D(\'start_time\')}'});" placeholder="请选择结束时间" autocomplete="off">
+      <span class="op_btn" onclick="waybill_list()" style="color:#1199D3;">查询</span>	
+    </div>
+    <div id="operationGroup">
+      <span class="op_btn" onclick="addTravel()">添加</span>
+      <span class="op_btn" onclick="changeTravel()">修改</span>
+      <span class="op_btn" onclick="deleteTravel()">删除</span>    
+      <span class="op_btn" onclick="statusMark()">状态标记</span>    
+    </div>
+    <!-- 表格 -->
+    <div class="indexTable">
+      <table id="indexTable" data-toggle="table"></table>
+    </div>
+    <!-- 弹框 -->
+    <div class="mask travelMask">
+      <div class="addTravel">
+        <div class="mask_title">
+          添加行程<span class="close" onclick="closeTravelMask()">×</span>
+        </div>
+        <div class="mask_main">
+          <div class="travelItem">
+            <div class="travelItemTitle">
+              发货人
+            </div>
+            <form class="form-inline">
+              <div class="form-group">
+                <label for="title">运单名称：</label>
+                <input type="text" class="form-control" id="title">
+              </div>
+              <div class="form-group">
+                <label for="shipper_name">发货人：</label>
+                <input type="text" class="form-control" id="shipper_name">
+              </div>
+              <div class="form-group">
+                <label for="shipper_phone">手机号：</label>
+                <input type="text" class="form-control" id="shipper_phone">
+              </div>
+              <div class="form-group">
+                <label for="loading_station">装车站：</label>
+                <input type="text" class="form-control station" id="loading_station" placeholder="输入站名或拼音首字母" onkeyup="tip(this)">
+                <ul class="list-group tip"></ul>
+              </div>
+              <div class="form-group">
+                <label for="leave_station" class="required">发站：</label>
+                <input type="text" class="form-control station" id="leave_station" placeholder="输入站名或拼音首字母" onkeyup="tip(this)">
+                <ul class="list-group tip"></ul>
+              </div>
+              <div class="form-group">
+                <label for="leave_station">装货方式：</label>
+                <div style="display:inline-block" id="loading_mode">
+                  <div class="radio-block">
+                    <label>
+                      <input type="radio" value="0" name="loading_mode">
+                      冷库对位装箱
+                    </label>
+                  </div>
+                  <div class="radio-block">
+                    <label>
+                      <input type="radio" value="1" name="loading_mode">
+                      站内冷柜装箱
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="leave_station">上门取货：</label>
+                <div style="display:inline-block" id="door_loading">
+                  <div class="radio">
+                    <label>
+                      <input type="radio" name="door_loading" value="0" checked>
+                      否
+                    </label>
+                  </div>
+                  <div class="radio">
+                    <label>
+                      <input type="radio" name="door_loading" value="1">
+                      是
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="departure_time" class="required">发运时间：</label>
+                <input type="text" class="form-control" id="departure_time" onfocus="WdatePicker({ dateFmt:'yyyy-MM-dd HH:mm:ss'})" placeholder="请选择发运时间" autocomplete="off">
+              </div>
+            </form>
+          </div>
+          <div class="travelItem">
+            <div class="travelItemTitle">
+              收货人
+            </div>
+            <form class="form-inline">
+              <div class="form-group">
+                <label for="receiver_name">收货人：</label>
+                <input type="text" class="form-control" id="receiver_name">
+              </div>
+              <div class="form-group">
+                <label for="receiver_phone">手机号：</label>
+                <input type="text" class="form-control" id="receiver_phone">
+              </div>
+              <div class="form-group">
+                <label for="arrival_station" class="required">到站：</label>
+                <input type="text" class="form-control station" id="arrival_station" placeholder="输入站名或拼音首字母" onkeyup="tip(this)">
+                <ul class="list-group tip"></ul>
+              </div>
+              <div class="form-group">
+                <label for="leave_station">卸货方式：</label>
+                <div style="display:inline-block" id="unload_mode">
+                  <div class="radio-block">
+                    <label>
+                      <input type="radio" value="0" name="unload_mode">
+                      冷库对位卸箱
+                    </label>
+                  </div>
+                  <div class="radio-block">
+                    <label>
+                      <input type="radio" value="1" name="unload_mode">
+                      站内冷柜卸箱
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="leave_station">上门卸货</label>
+                <div style="display:inline-block" id="door_unload">
+                  <div class="radio">
+                    <label>
+                      <input type="radio" value="0" checked name="door_unload">
+                      否
+                    </label>
+                  </div>
+                  <div class="radio">
+                    <label>
+                      <input type="radio" value="1" name="door_unload">
+                      是
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="travelItem">
+            <div class="travelItemTitle">
+              运单信息
+            </div>
+            <form class="form-inline">
+              <div class="form-group">
+                <label for="crew_name">值乘人员：</label>
+                <input type="text" class="form-control" id="crew_name">
+              </div>
+              <div class="form-group">
+                <label for="crew_phone">手机号：</label>
+                <input type="text" class="form-control" id="crew_phone">
+              </div>
+              <div class="form-group">
+                <label for="power_box_num" class="required">发电箱号：</label>
+                <input type="text" class="form-control" id="power_box_num">
+              </div>
+            </form>
+            <dl class="list-group" id="goods_info">
+              <dt>已添加集装箱:</dt>
+              <dd class="list-group-item">
+              </dd>
+            </dl>
+          </div>  
+          <div class="travelItem">
+            <div class="travelItemTitle">
+              添加集装箱
+            </div>
+            <form class="form-inline">
+              <div class="form-group">
+                <label for="train_num">车号：</label>
+                <input type="text" class="form-control" id="train_num"  autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label for="box_num" class="required">箱号：</label>
+                <input type="text" class="form-control" id="box_num"  autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label for="goods_name" class="required">货物名称：</label>
+                <input type="text" class="form-control" id="goods_name"  autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label for="goods_name" class="required">货物品类：</label>
+                <input type="text" class="form-control" id="goods_category_des" autocomplete="off">
+                <div id="changeGoodsCategory">
+                  <select id="goodsCategory1" class="form-control">
+                    <option value="">===请选择===</option>
+                  </select>
+                  <select id="goodsCategory2" class="form-control">
+                    <option value="">===请选择===</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="set_temp">设定温度：</label>
+                <input type="text" class="form-control" id="set_temp"  autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label for="receive_time">接收时间：</label>
+                <input type="text" class="form-control" id="receive_time" onfocus="WdatePicker({ dateFmt:'yyyy-MM-dd HH:mm:ss'})" placeholder="请选择接收时间" autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label for="loading_time">装车时间：</label>
+                <input type="text" class="form-control" id="loading_time" onfocus="WdatePicker({ dateFmt:'yyyy-MM-dd HH:mm:ss'})" placeholder="请选择装车时间" autocomplete="off">
+              </div>
+              <button type="button" class="btn btn-default btn-sm" id="add_box" onclick="addBox()">保存集装箱</button>
+            </form>
+          </div>
+          <div class="myform_button">
+            <button type="button" class="btn btn-info" onclick="travelSave()">保存运单</button>
+          </div>
+        </div>
+      </div>      
+    </div>
+    <div class="mask statusMask">
+      <div class="statusMark">
+        <div class="mask_title">
+          状态标记<span class="close" onclick="closeStatusMask()">×</span>
+        </div>
+        <div class="mask_main">
+          <div class="statusTitle">当前运单进度</div>
+          <ul class="steps">
+            <li>
+              <span class="step-text">1</span>
+              <span class="step-content">装货</span>
+            </li>
+            <li>
+              <span class="step-text">2</span>
+              <span class="step-content">发车</span>
+            </li>
+            <li>
+              <span class="step-text">3</span>
+              <span class="step-content">过站</span>
+            </li>
+            <li>
+              <span class="step-text">4</span>
+              <span class="step-content">到站</span>
+            </li>
+            <li>
+              <span class="step-text">5</span>
+              <span class="step-content">卸货</span>
+            </li>
+          </ul>
+          <div class="statusTitle">运单进度列表</div>
+          <ul class="stepList">
+            <li>
+              <h3>
+                过站：丹东
+                <span>
+                  <button class="glyphicon glyphicon-edit" onclick="editStatus(this)"></button>
+                  <button class="glyphicon glyphicon-remove" onclick="deleteStatus(this)"></button>
+                </span>
+              </h3>
+              <p>2019-12-12 12:00:00</p>
+            </li>
+            <li>
+              <h3>
+                过站：丹东
+                <span>
+                  <button class="glyphicon glyphicon-edit" onclick="editStatus(this)"></button>
+                  <button class="glyphicon glyphicon-remove" onclick="deleteStatus(this)"></button>
+                </span>
+              </h3>
+              <p>2019-12-12 12:00:00</p>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+     $(function(){
+      // 页面初始化
+      pageInit();
+      // 初始化头部
+      new Header('#header');
+      // 初始化导航
+      new Nav('#nav');
+      // 行程表格
+      waybill_list();
+
+      showGoodsCategory();
+    })
+  </script>
+  <script>
+    // 车站输入框禁止输入数字
+    $('.station').keydown(function(ev){
+      if(ev.keyCode>=48 && ev.keyCode<= 57){
+        return false
+      }
+    })
+    var tableRow = null;
+    var goods_info = [];
+    var goods_id = ''
+    var travel_id = ''
+    var statusList = []
+    function pageInit(){
+      tableRow = null;
+      goods_info = [];
+      statusList = []
+      goods_id = ''
+      travel_id = ''
+      showGoodsList()
+      $('#title').val('')
+      $('#shipper_name').val('')
+      $('#shipper_phone').val('')
+      $('#loading_station').val('')
+      $('#leave_station').val('')
+      $('#loading_mode').find('input').removeAttr('checked')
+      $('#door_loading').find('input').removeAttr('checked')
+      $('#departure_time').val('')
+      $('#receiver_name').val('')
+      $('#receiver_phone').val('')
+      $('#arrival_station').val('')
+      $('#unload_mode').find('input:checked').removeAttr('checked')
+      $('#door_unload').find('input:checked').removeAttr('checked')
+      $('#power_box_num').val('')
+      $('#crew_name').val('')
+      $('#crew_phone').val('')
+      $('#box_num').val('TBJU190')
+    }
+    // 箱子信息
+    function tip(el){
+      if($(el).val().trim().length >= 2){
+        $(el).next('ul').empty()
+        $.ajax({
+          type : 'POST',
+          url : reqDomain + "/container/waybill/station_list",
+          data: {
+            channel: 'web',
+            keywords: $(el).val()
+          },
+          dataType:"json",
+          xhrFields:{
+            withCredentials: true
+          },
+          success:function(data){
+            if(data.code == 200){
+              $(el).next('ul').show();
+              if(data.result == 0){
+                $(el).next('ul').html('<li class="list-group-item">未检索到车站</li>')
+              }else{
+                for(var i=0;i<data.result.length;i++){
+                  $(el).next('ul').append('<li class="list-group-item">'+data.result[i].station+'</li>')
+                  $('.tip li').click(function(){
+                    $(el).val($(this).text())
+                    $(this).parent().hide();
+                  })
+                }                
+              }
+            }
+          }				
+        });
+      }else{
+        $(el).next('ul').hide()
+      }
+    }
+    // 品类下拉列表
+    function showGoodsCategory(){
+      $('#goodsCategory1 option:gt(0)').remove();
+      for(var i=0;i<goodsCategory.length;i++){
+        $('#goodsCategory1').append('<option value="'+(+i+1)+'">'+goodsCategory[i].type+'</option>');
+      }
+      $('#goodsCategory1').change(function(){
+        if($(this).val() != ''){
+          $('#goodsCategory2 option:gt(0)').remove();
+          for(var i=0;i<goodsCategory.length;i++){
+            if(goodsCategory[i].type == $('#goodsCategory1 option:selected').text()){
+              for(var j=0;j<goodsCategory[i].content.length;j++){
+                $('#goodsCategory2').append('<option value="'+(+j+1)+'">'+goodsCategory[i].content[j]+'</option>')
+              }
+              break;
+            }
+          }
+        }
+      })
+      $('#goodsCategory2').change(function(){
+        if($(this).val() != ''){
+          $('#goods_category_des').val($('#goodsCategory1 option:selected').text()+'=>'+$('#goodsCategory2 option:selected').text())
+          $('#changeGoodsCategory').hide();
+        }
+      })
+      $('#goods_category_des').focus(function(){
+        $('#changeGoodsCategory').show();
+      })
+      $('#goodsCategory2').blur(function(){
+        $('#changeGoodsCategory').hide();
+      })
+    }
+    // 添加箱子
+    function addBox(){
+      if($('#box_num').val().length != 11){
+        layer.msg('请输入十一位箱号')
+      }else if($('#goods_name').val() == ''){
+        layer.msg('货物名称不能为空')
+      }else if($('#goods_category_des').val() == ''){
+        layer.msg('货物品类不能为空')
+      }else{
+        if(goods_info.length != 0){
+          var change = false
+          for(var i=0;i<goods_info.length;i++){
+            if(goods_info[i].goods_id == goods_id && goods_id != ''){
+              change = true;
+              goods_info[i].goods_id = goods_id
+              goods_info[i].train_num = $('#train_num').val()
+              goods_info[i].box_num = $('#box_num').val()
+              goods_info[i].goods_name = $('#goods_name').val()
+              goods_info[i].goods_category_des = $('#goods_category_des').val()
+              goods_info[i].goods_category = $('#goodsCategory1').val()+'.'+$('#goodsCategory2').val()
+              goods_info[i].set_temp = $('#set_temp').val()
+              goods_info[i].receive_time = $('#receive_time').val()
+              goods_info[i].loading_time = $('#loading_time').val()
+            }
+          }
+          if(!change){
+            var have = false;
+            for(var i=0;i<goods_info.length;i++){
+              if(goods_info[i].box_num == $('#box_num').val()){
+                have = true;
+                break;
+              }
+            }
+            if(have){
+              layer.msg('该箱号已被添加，请确认箱号')
+            }else{
+              goods_info.push({
+                'goods_id': goods_id,
+                'train_num': $('#train_num').val(),
+                'box_num': $('#box_num').val(),
+                'goods_name': $('#goods_name').val(),
+                'goods_category_des': $('#goods_category_des').val(),
+                'goods_category': $('#goodsCategory1').val()+'.'+$('#goodsCategory2').val(),
+                'set_temp': $('#set_temp').val(),
+                'receive_time': $('#receive_time').val(),
+                'loading_time': $('#loading_time').val(),
+              })
+              $('#train_num').val('')
+              goods_id = ''
+              $('#box_num').val('TBJU190')
+              showGoodsList()
+              layer.msg('保存集装箱成功')
+            }
+          }
+        }else{
+          goods_info.push({
+            'goods_id': goods_id,
+            'train_num': $('#train_num').val(),
+            'box_num': $('#box_num').val(),
+            'goods_name': $('#goods_name').val(),
+            'goods_category_des': $('#goods_category_des').val(),
+            'goods_category': $('#goodsCategory1').val()+'.'+$('#goodsCategory2').val(),
+            'set_temp': $('#set_temp').val(),
+            'receive_time': $('#receive_time').val(),
+            'loading_time': $('#loading_time').val(),
+            'goods_id': goods_id
+          })
+          $('#train_num').val('')
+          goods_id = ''
+          $('#box_num').val('TBJU190')
+          showGoodsList()
+          layer.msg('保存集装箱成功')
+        }
+      }         
+      $('#box_num').val('TBJU190')
+      showGoodsList()
+    }
+    // 已添加箱子列表
+    function showGoodsList(){
+      $('#goods_info dd').remove();
+      if(goods_info.length == 0){
+        $('#goods_info').append('<dd class="list-group-item"><span>暂无</span></dd>')
+      }else{
+        for(var i=0;i<goods_info.length;i++){
+          $('#goods_info').append('<dd class="list-group-item"><span>'+goods_info[i].box_num+'</span><span class="goods_op"><button class="glyphicon glyphicon-edit" onclick="editBox('+i+')"></button><button class="glyphicon glyphicon-remove" onclick="deleteBox('+i+')"></button></span></dd>')
+        }
+      }
+      $('#goods_info dd').hover(function(){
+        for(var i=0;i<goods_info.length;i++){
+          if(goods_info[i].box_num == $(this).find('span:eq(0)').text()){
+            var str = '<ul class="list-group good_detail">';
+            str += '<li class="list-group-item"><span>车号：</span><span>'+goods_info[i].train_num+'</span></li>';
+            str += '<li class="list-group-item"><span>箱号：</span><span>'+goods_info[i].box_num+'</span></li>';
+            str += '<li class="list-group-item"><span>货物名称：</span><span>'+goods_info[i].goods_name+'</span></li>';
+            str += '<li class="list-group-item"><span>货物品类:</span><span>'+goods_info[i].goods_category_des+'</span></li>';
+            str += '<li class="list-group-item"><span>设定温度：</span><span>'+goods_info[i].set_temp+'</span></li>';
+            str += '<li class="list-group-item"><span>接收时间：</span><span>'+goods_info[i].receive_time+'</span></li>';
+            str += '<li class="list-group-item"><span>装车时间：</span><span>'+goods_info[i].loading_time+'</span></li></ul>';
+            $(this).append(str);      
+            break;
+          }
+        }
+      },function(){
+        $('.good_detail').remove();
+      })
+    }
+    function editBox(index){
+      $('#goods_info dd:eq('+index+')').addClass('disabled');
+      $('#goods_info dd:eq('+index+')').find('button').attr('disabled',"disabled");
+      for(var i=0;i<goods_info.length;i++){
+        if(goods_info[i].box_num == goods_info[index].box_num){
+          $('#train_num').val(goods_info[i].train_num)
+          $('#box_num').val(goods_info[i].box_num)
+          $('#goods_name').val(goods_info[i].goods_name)
+          $('#goods_category_des').val(goods_info[i].goods_category_des)
+          $('#goodsCategory1').val(getCaption(goods_info[i].goods_category,0))
+          $('#goodsCategory2 option:gt(0)').remove();
+          for(var k=0;k<goodsCategory.length;k++){
+            if(goodsCategory[k].type == $('#goodsCategory1 option:selected').text()){
+              for(var j=0;j<goodsCategory[k].content.length;j++){
+                $('#goodsCategory2').append('<option value="'+(+j+1)+'">'+goodsCategory[k].content[j]+'</option>')
+              }
+              $('#goodsCategory2').val(getCaption(goods_info[i].goods_category,1))
+              break;
+            }
+          }
+          $('#set_temp').val(goods_info[i].set_temp)
+          $('#receive_time').val(formatTime1(goods_info[i].receive_time))
+          $('#loading_time').val(formatTime1(goods_info[i].loading_time))
+          goods_id = goods_info[i].goods_id
+          break;
+        }
+      }
+    }
+    function deleteBox(index){
+      layer.confirm('确定要删除该集装箱么？',function(){
+        for(var i=0;i<goods_info.length;i++){
+          if(goods_info[i].box_num == goods_info[index].box_num){
+            goods_info.splice(i,1);
+            layer.msg('删除成功');
+            showGoodsList()
+            break;
+          }
+        }
+      })
+    }
+    // 货物品类数组转下拉列表
+    function getCaption(obj,state) {
+      var index=obj.lastIndexOf("\.");
+      if(state==0){
+          obj=obj.substring(0,index);
+      }else {
+          obj=obj.substring(index+1,obj.length);
+      }
+      return obj;
+    }
+    function travelSave(){
+      if($('#leave_station').val() == '' || $('#departure_time').val() == '' || $('#arrival_station').val() == '' || $('#power_box_num').val() == ''){
+        layer.msg('请填写必填项！');
+        return false
+      }
+      $.ajax({
+        type : 'POST',
+        url : reqDomain + "/container/waybill/waybill_save",
+        dataType:"json",
+        data: {
+          channel: 'web',
+          travel_id: travel_id,
+          title: $('#title').val(),
+          shipper_name: $('#shipper_name').val(),
+          shipper_phone: $('#shipper_phone').val(),
+          loading_station: $('#loading_station').val(),
+          leave_station: $('#leave_station').val(),
+          loading_mode: $('#loading_mode').find('input:checked').val(),
+          door_loading: $('#door_loading').find('input:checked').val(),
+          departure_time: $('#departure_time').val(),
+          receiver_name: $('#receiver_name').val(),
+          receiver_phone: $('#receiver_phone').val(),
+          arrival_station: $('#arrival_station').val(),
+          unload_mode: $('#unload_mode').find('input:checked').val(),
+          door_unload: $('#door_unload').find('input:checked').val(),
+          power_box_num: $('#power_box_num').val(),
+          crew_name: $('#crew_name').val(),
+          crew_phone: $('#crew_phone').val(),
+          goods_info: JSON.stringify(goods_info),
+        },
+        xhrFields:{
+          withCredentials: true
+        },
+        success:function(data){
+          if(data.code == 200){
+            closeTravelMask();
+            waybill_list();
+            travel_id = '';     
+            tableRow = ''         
+            layer.msg('运单保存成功');
+          }
+        }		
+      })      
+    }
+    //行程表格
+    function waybill_list(){
+      $.ajax({
+        type : 'POST',
+        url : reqDomain + "/container/waybill/waybill_list",
+        dataType:"json",
+        data: {
+          channel: 'web',
+          "status": $('#travel_status').val(),
+          "startTime": $('#start_time').val(),
+          "endTime": $('#end_time').val()
+        },
+        xhrFields:{
+          withCredentials: true
+        },
+        success:function(data){
+          if(data.code == 200){
+            tableRow = null
+            $("#indexTable").bootstrapTable("load",data.result.waybill);
+          }
+        }				
+      });
+    }
+    //行程表格
+    $('#indexTable').bootstrapTable({
+      sortable:true,
+      height: document.getElementsByTagName('body')[0].scrollHeight-200,
+      sortOrder:'travel_id desc',
+      toolbar: '#operationGroup',
+      clickToSelect: true,
+      showExport: true,
+      pagination: true,
+      search: true,
+	    searchTimeOut: 700,
+      paginationLoop: true,
+      pageNumber: 1,
+      pageSize: 15,
+      exportDataType: 'all',
+      columns:[
+        {
+          title:'序号',
+          formatter: function(value, row, index) {
+            return index + 1;
+          },
+          width:'10%',
+        },
+        {
+          title:'名称',
+          field:'title',
+        },
+        {
+          title:'状态',
+          formatter: function(value, row, index) {
+            if(row.status <= 0) {
+              return "未开始";
+            } else if(row.status == 5) {
+              return "已卸货";
+            } else {
+              return "进行中";
+            }
+          }
+        },
+        {
+          title:'设备数量',
+          field:'box_num',
+        },
+        {
+          title:'开始时间',
+          field:'departure_time',
+          formatter: function(value){
+            return formatTime(value);
+          }
+        },
+        {
+          title:'货物',
+          field:'goods_name'
+        },
+        {
+          title:'设定温度',
+          field:'set_temp',
+          formatter: function(value){
+            if(value == -999){
+              return '-'
+            }else{
+              return (+value).toFixed(0)
+            }
+          }
+        },
+        {
+          title:'发站',
+          field:'leave_station'
+        }
+      ]
+    });
+    // 点击表格行
+    $("#indexTable").on('click-row.bs.table', function(e, row, element) {
+      $(element).addClass('bg').siblings().removeClass('bg');
+      tableRow = row;
+      travel_id = tableRow.travel_id
+    })
+    // 添加行程
+    function addTravel(){
+      $('.addTravel .mask_title').html('添加行程<span class="close" onclick="closeTravelMask()">×</span>')
+      pageInit()
+      $('.travelMask').show();
+    }    
+    // 修改行程
+    function changeTravel(){
+      if(tableRow == null){
+        layer.msg('请选择一个行程!');
+        return false;
+      }
+      $('.addTravel .mask_title').html('修改行程<span class="close" onclick="closeTravelMask()">×</span>')
+      $.ajax({
+        async: false,
+        cache: false,
+        type: 'POST',
+        url: reqDomain + "/container/waybill/waybill_detail", 
+        data: {
+          channel: 'web',
+          "travel_id": tableRow.travel_id
+        },
+        dataType: "json",
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function(data) {
+          if(data.code == 200) {
+            travel_id = data.result.travel[0].travel_id
+            $('#title').val(data.result.travel[0].title)            
+            $('#shipper_name').val(data.result.travel[0].shipper_name)
+            $('#leave_station').val(data.result.travel[0].leave_station)         
+            $('#loading_mode').find('input:eq('+(+data.result.travel[0].loading_mode)+')').prop('checked','checked')
+            $('#shipper_phone').val(data.result.travel[0].shipper_phone)
+            $('#departure_time').val(formatTime1(data.result.travel[0].departure_time))
+            $('#receiver_name').val(data.result.travel[0].receiver_name)
+            $('#arrival_station').val(data.result.travel[0].arrival_station)
+            $('#crew_name').val(data.result.travel[0].crew_name)          
+            $('#crew_phone').val(data.result.travel[0].crew_phone)   
+            $('#unload_mode').find('input:eq('+(+data.result.travel[0].unload_mode)+')').prop('checked','checked')
+            $('#receiver_phone').val(data.result.travel[0].receiver_phone)
+            $('#door_loading').find('input:eq('+(+data.result.travel[0].door_loading)+')').prop('checked','checked')
+            $('#loading_branch').val(data.result.travel[0].loading_branch)
+            $('#loading_station').val(data.result.travel[0].loading_station)
+            $('#arrave_branch').val(data.result.travel[0].arrave_branch)
+            $('#door_unload').find('input:eq('+(+data.result.travel[0].door_unload)+')').prop('checked','checked')
+            $('#power_box_num').val(data.result.travel[0].power_box_num);
+            for(var i=0;i<data.result.goods.length;i++){
+              if(data.result.goods[i].goods_category != '.'){
+                data.result.goods[i].goods_category_des = goodsCategory[getCaption(data.result.goods[i].goods_category,0)-1].type +'=>'+ goodsCategory[getCaption(data.result.goods[i].goods_category,0)-1].content[getCaption(data.result.goods[i].goods_category,1)-1]
+              }
+            }
+            goods_info = data.result.goods
+            showGoodsList()
+            $('.travelMask').show();
+          }
+        }
+      });      
+    }
+    // 删除行程
+    function deleteTravel(){
+      if(tableRow == null){
+        layer.msg('请选择一个行程！');
+        return false;
+      }
+      layer.confirm('确定要删除该行程吗？',function(){
+        $.ajax({
+          async: false,
+          cache: false,
+          type: 'POST',
+          url: reqDomain + "/container/waybill/waybill_delete", 
+          data: {
+            channel: 'web',
+            "travel_id": tableRow.travel_id
+          },
+          dataType: "json",
+          xhrFields: {
+            withCredentials: true
+          },
+          success: function(data) {
+            if(data.code == 200) {
+              layer.alert("删除成功!");
+              tableRow = null;
+              waybill_list();
+              closeTravelMask();
+            }
+          }
+        });
+      })
+    }
+    // 状态标记
+    function statusMark(){
+      if(tableRow == null){
+        layer.msg('请选择一个行程!');
+        return false;
+      }
+      $('.steps li').removeClass('active');
+      travel_id = tableRow.travel_id
+      getNewStatus()          
+    }
+    function getNewStatus(){
+      $.ajax({
+        async: false,
+        cache: false,
+        type: 'POST',
+        url: reqDomain + "/container/waybill/waybill_detail", 
+        data: {
+          channel: 'web',
+          "travel_id": travel_id
+        },
+        dataType: "json",
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function(data) {
+          if(data.code == 200) {
+            travel_id = travel_id
+            var status = data.result.last_status[0].status;
+            statusList = data.result.status
+            $('.steps li').removeClass('active');
+            $('.steps li').each(function(){
+              if($(this).find('.step-text').text() == status){
+                $(this).addClass('active')
+                $('.steps li:lt('+$(this).index()+')').addClass('active');
+              }
+            })
+            $('.stepList').empty()
+            if(statusList.length != 0){
+              showStepList();
+            }
+            $('.statusMask').show();
+          }
+        }
+      });  
+    }
+    $('.steps li span').click(function(){
+      var statusCurremt = $(this).parent('li').find('span.step-text').text();
+      if($(this).parent('li').attr('class') != 'active' || statusCurremt == 3){
+        $('.step-info').remove();
+        var str = '<div class="step-info"><form class="form-inline">';                 
+        if(statusCurremt == 3){
+          str += '<div class="form-group"><label for="station_name">过站：</label>'
+          str += '<input type="text" class="form-control station" id="station_name" placeholder="输入站名或拼音首字母" onkeyup="tip(this)"><ul class="list-group tip"></ul></div>';
+        }
+        str += '<div class="form-group">'+
+          '<label for="cross_station_time">标记时间：</label>'+
+          '<input type="text" class="form-control" id="cross_station_time" onfocus="WdatePicker({ dateFmt: \'yyyy-MM-dd HH:mm:ss\'})" placeholder="请选择发运时间" autocomplete="off"></div>'+
+          '<div class="form-group">'+
+          '<button type="button" class="btn btn-default btn-sm" onclick="cancelInfo()">取消</button>'+
+          '<button type="button" class="btn btn-default btn-sm" onclick="saveStatus(this)">确认</button>'+
+          '</div></form></div>';
+        $(this).parent('li').append(str)
+      }else{
+        return false
+      }
+    })
+    function cancelInfo(){
+      $('.step-info').remove()
+    }
+    // 显示状态列表
+    function showStepList(){
+      var str = ''
+      for(var i=0;i<statusList.length;i++){
+        str += '<li id="'+statusList[i].status_id+'"><h3>';
+        switch(statusList[i].status){
+          case '1':
+            str += '装货';
+            break;
+          case '2':
+            str += '发车';
+            break;
+          case '3':
+            str += '过站：';
+            str += '<span class="station">'+statusList[i].station_name+'</span>';
+            break;
+          case '4':
+            str += '到站';
+            break;
+          case '5':
+            str += '卸货';
+            break;
+          default:
+            break;
+        }
+        str += '<span class="'+statusList[i].status+'"><button class="glyphicon glyphicon-edit" onclick="editStatus(this)"></button><button class="glyphicon glyphicon-remove" onclick="deleteStatus(this)"></button></span></h3>'+
+        '<p>'+formatTime1(statusList[i].cross_station_time)+'</p></li>';
+      }
+      $('.stepList').append(str)
+    }
+    function saveStatus(el){
+      var status = $(el).parents('li').find('span.step-text').text();
+      if($('#cross_station_time').val() == '' || $('#station_name').val() == ''){
+        layer.msg('请填写信息');
+        return false
+      }
+      $.ajax({
+        async: false,
+        cache: false,
+        type: 'POST',
+        url: reqDomain + "/container/waybill/waybill_status_save", 
+        data: {
+          channel: 'web',
+          travel_id: travel_id,
+          cross_station_time: $('#cross_station_time').val(),
+          status: status,
+          station_name: $('#station_name').val()
+        },
+        dataType: "json",
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function(data) {
+          if(data.code == 200){
+            layer.msg('标记成功');
+            $(el).parents('li').addClass('active')
+            $('.step-info').remove();
+            waybill_list();
+            getNewStatus();
+          }
+        }      
+      })
+    }
+    // 修改状态
+    function editStatus(el){
+      $('.step-info').remove()
+      var statusCurremt = $(el).parents('span').attr('class');
+      var str = '<div class="step-info step-change"><form class="form-inline">';         
+      if(statusCurremt == 3){
+        str += '<div class="form-group"><label for="station_name">过站：</label>'
+        str += '<input type="text" class="form-control station" value="'+$(el).parents('li').find('.station').text()+'" id="station_name" placeholder="输入站名或拼音首字母" onkeyup="tip(this)"><ul class="list-group tip"></ul></div>';
+      }
+      str += '<div class="form-group">'+
+        '<label for="cross_station_time">标记时间：</label>'+
+        '<input type="text" class="form-control" value="'+$(el).parents('li').find('p').text()+'" id="cross_station_time" onfocus="WdatePicker({ dateFmt: \'yyyy-MM-dd HH:mm:ss\'})" placeholder="请选择发运时间" autocomplete="off"></div>'+
+        '<div class="form-group">'+
+        '<button type="button" class="btn btn-default btn-sm" onclick="cancelInfo()">取消</button>'+
+        '<button type="button" class="btn btn-default btn-sm" onclick="changeStatus(this)">确认</button>'+
+        '</div></form></div>';
+      $(el).parents('li').append(str)
+    }
+    // 保存修改状态
+    function changeStatus(el){
+      var status = $(el).parents('li').find('.station').next('span').attr('class');
+      if($('#cross_station_time').val() == '' || $('#station_name').val() == ''){
+        layer.msg('请填写信息');
+        return false
+      }
+      $.ajax({
+        async: false,
+        cache: false,
+        type: 'POST',
+        url: reqDomain + "/container/waybill/waybill_status_save", 
+        data: {
+          channel: 'web',
+          travel_id: travel_id,
+          status_id: $(el).parents('li').attr('id'),
+          cross_station_time: $('#cross_station_time').val(),
+          status: status,
+          station_name: $('#station_name').val()
+        },
+        dataType: "json",
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function(data) {
+          if(data.code == 200){
+            layer.msg('标记成功');
+            $(el).parents('li').addClass('active')
+            $('.step-info').remove();
+            waybill_list();
+            getNewStatus();
+          }
+        }      
+      })
+    }
+    // 删除状态
+    function deleteStatus(el){
+      layer.confirm('确定要删除该标记么',function(){
+        $.ajax({
+          async: false,
+          cache: false,
+          type: 'POST',
+          url: reqDomain + "/container/waybill/waybill_status_delete", 
+          data: {
+            channel: 'web',
+            status_id: $(el).parents('li').attr('id')
+          },
+          dataType: "json",
+          xhrFields: {
+            withCredentials: true
+          },
+          success: function(data){
+            if(data.code == 200){
+              layer.msg('删除标记成功');
+              waybill_list();
+              getNewStatus();
+            }
+          }
+        })
+      })
+    }
+    // 点击叉号
+    function closeTravelMask(){
+      $('.travelMask').fadeOut(300);
+    }
+    function closeStatusMask(){
+      $('.statusMask').fadeOut(300);
+    }
+    // 排序
+    function up(x,y){
+      return x.name.substr(x.name.length-7)-y.name.substr(y.name.length-7);
+    }
+  </script>
+</body>
+</html>

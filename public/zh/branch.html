@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="shortcut icon" href="../img/icon/lenglian.ico">
+  <link rel="stylesheet" href="../css/bootstrap.min.css">
+  <link rel="stylesheet" href="../css/bootstrap-table.css">
+  <link rel="stylesheet" href="../font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../publicJS/jquery-2.1.0.js"></script>
+  <script src="../publicJS/bootstrap.min.js"></script>
+  <script src="../publicJS/bootstrap-table.js"></script>
+  <script src="../publicJS/bootstrap-table-zh-CN.min.js?v=20191213"></script>
+  <script src="../publicJS/tableExport.min.js?v=20191213"></script>
+  <script src="../publicJS/bootstrap-table-export.min.js?v=20191213"></script>
+  <script src="../publicJS/reqDomain.js"></script>
+  <script src="../plugs/layer/layer.js"></script>
+  <script src="js/function.js"></script>
+  <script src="js/assembly.js"></script>
+  <style>
+    /* 页面效果 */
+    #main{background: white;}
+    .indexTable{position: relative;margin-top: 20px;}
+    .indexTable table tr.bg td{background-color: #e6e6e6;}
+    /* 弹框效果 */
+    .mask>div{width: 800px;height: 220px;position: absolute;top: 50%;left: 50%;margin: -110px 0 0 -400px;background-color: #fff;overflow: hidden;border: 1px solid #45C5F8;border-radius: 10px;}
+    .mask_table{width: 370px;margin: 35px auto;}
+    .mask_table td{text-align: right;font-size: 14px;}
+    .mask_table td .form-control{border: 1px solid #D9D9D9;padding: 2px 8px;margin: 5px 0 5px 20px;width: 200px;resize: none;}
+    .mask_table td input,.mask_table td select{height: 25px;}    
+  </style>
+</head>
+<body>
+  <div id="header"></div>
+  <div id="manageNav"></div>
+  <div id="main">
+    <!-- 面包屑 -->
+    <ol class="breadcrumb">
+      <li><a href="#">部门</a></li>
+      <li class="active">部门列表</li>
+    </ol>
+     <!-- 操作组 -->
+     <div id="operationGroup">
+      <span class="op_btn" onclick="addDept()">添加</span>
+      <span class="op_btn" onclick="changeDept()">修改</span>
+      <span class="op_btn" onclick="deleteDept()">删除</span>	
+    </div>
+    <!-- 表格 -->
+    <div class="indexTable">
+      <table id="indexTable" data-toggle="table"></table>
+    </div>
+     <!-- 弹框 -->
+     <div class="mask"></div>
+  </div>
+  <script>
+    $(function(){
+      // 页面初始化
+      pageInit();
+      // 初始化头部
+      new Header('#header');
+      // 初始化管理导航
+      new ManageNav('#manageNav');
+      // 获取部门列表
+      deptList();
+    })
+  </script>
+  <script>
+    var tableRow = null;
+    // 页面初始化
+    function pageInit(){
+      tableRow = null;
+    }
+    // 用户列表
+    function deptList(){
+      $.ajax({
+        type: "POST",
+        url: reqDomain + "/dept/dept_listing",
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function (data) {
+          if(data.code == '200'){
+            $("#indexTable").bootstrapTable('load',data.result)
+          }
+        }
+      });
+    }
+    $("#indexTable").bootstrapTable({
+      sidePagination: "client",
+      showExport: true,
+      height: document.getElementsByTagName('body')[0].scrollHeight-200,
+      exportDataType: 'all',
+      clickToSelect: true,
+      toolbar: '#operationGroup',
+      pagination: true,
+      search: true,
+	    searchTimeOut: 700,
+      paginationLoop: true,
+      pageNumber: 1,
+      pageList: [10,15,20],
+      pageSize: 15,
+      showExport: true,
+      exportDataType: 'all',
+      columns: [{
+        title: '序号',
+        formatter: function(value, row, index) {
+          return index + 1;
+        }
+      }, {
+        field: 'title',
+        title: '部门名称'
+      }, {
+        field: 'remarks',
+        title: '部门说明'
+      },{
+        field: 'id',
+        title: 'id',
+        visible: false
+      }]
+    });
+    $('#indexTable').on('click-row.bs.table',function(e,row,element){
+      $(element).addClass('bg').siblings().removeClass('bg');
+      tableRow = row;
+    })
+    // 添加部门
+    function addDept(){
+      $('.mask').show();
+      new AddDept();
+    }
+    function AddDept(){
+      this.init();
+    }
+    AddDept.prototype.init = function(){
+      var div = document.createElement('div');
+      var str = '<div class="mask_title">添加部门<span class="close" onclick="closeMask()">×</span></div>';
+      str += '<div class="mask_main"><table class="mask_table"><tr><td>部门名称</td><td><input type="text" class="form-control" id="title"></td></tr>';
+      str += '<tr><td>部门说明</td><td><input type="text" class="form-control" id="remarks"></td></tr></table>';
+      str += '<div class="myform_button"><button type="button" class="btn btn-info" onclick="deptAdd()">保存</button> </div></div>';  
+      div.innerHTML = str;
+      document.getElementsByClassName('mask')[0].appendChild(div);    
+    }
+    // 部门添加保存
+    function deptAdd(){
+      if($('#title').val() == ''){
+        layer.alert('部门名称不能为空！');
+        return false;
+      }
+      $.ajax({
+        type: "POST",
+        url: reqDomain + "/dept/dept_save",
+        data:{
+          title: $('#title').val(),
+          remarks: $('#remarks').val(),
+        },
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function (data) {
+          if(data.code == '200'){
+            layer.alert('部门添加成功！');
+            closeMask();
+            deptList();
+            tableRow = null;
+          }
+        }
+      })
+    }
+    // 修改部门
+    function changeDept(){
+      if(tableRow == null){
+        layer.alert('请选择一个部门！');
+        return false;
+      }
+      $('.mask').show();
+      new ChangeDept();
+    }
+    function ChangeDept(){
+      this.init();
+    }
+    ChangeDept.prototype.init = function(){
+      var div = document.createElement('div');
+      var str = '<div class="mask_title">修改部门<span class="close" onclick="closeMask()">×</span></div>';
+      str += '<div class="mask_main"><table class="mask_table"><tr><td>部门名称</td><td><input type="text" class="form-control" id="title"></td></tr>';
+      str += '<tr><td>部门说明</td><td><input type="text" class="form-control" id="remarks"></td></tr></table>';
+      str += '<div class="myform_button"><button type="button" class="btn btn-info" onclick="deptChange()">保存</button> </div></div>';  
+      div.innerHTML = str;
+      document.getElementsByClassName('mask')[0].appendChild(div);
+      $('#title').val(tableRow.title);
+      $('#remarks').val(tableRow.remarks);
+    }
+    // 部门修改保存
+    function deptChange(){
+      if($('#title').val() == ''){
+        layer.alert('部门名称不能为空！');
+        return false;
+      }
+      $.ajax({
+        type: "POST",
+        url: reqDomain + "/dept/dept_save",
+        data:{
+          id: tableRow.id,
+          title: $('#title').val(),
+          remarks: $('#remarks').val(),
+        },
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function (data) {
+          if(data.code == '200'){
+            layer.alert('部门修改成功！');
+            closeMask();
+            deptList();
+            tableRow = null;
+          }
+        }
+      })
+    }
+    // 删除部门
+    function deleteDept(){
+      if(tableRow == null){
+        layer.alert('请选择一个部门！');
+        return false;
+      }
+      layer.confirm('确定要删除该部门么？',function(){
+        $.ajax({
+          type: "POST",
+          url: reqDomain + "/dept/dept_delete",
+          data:{
+            id: tableRow.id,
+          },
+          xhrFields: {
+            withCredentials: true
+          },
+          success: function (data) {
+            if(data.code == '200'){
+              layer.alert('部门删除成功！');
+              deptList();
+              tableRow = null;
+            }
+          }
+        })
+      })
+    }
+    // 点击叉号
+    function closeMask(){
+      $('.mask').fadeOut(300);
+      $('.mask>div').remove();
+    }
+ </script>
+</body>
+</html> 

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="shortcut icon" href="../img/icon/lenglian.ico">
+  <link rel="stylesheet" href="../css/bootstrap.min.css">
+  <link rel="stylesheet" href="../css/bootstrap-table.css">
+  <link rel="stylesheet" href="../font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../publicJS/jquery-2.1.0.js"></script>
+  <script src="../publicJS/bootstrap.min.js"></script>
+  <script src="../publicJS/bootstrap-table.js"></script>
+  <script src="../publicJS/reqDomain.js"></script>
+  <script src="../plugs/layer/layer.js"></script>
+  <script src="../plugs/date/WdatePicker.js"></script>
+  <script src="js/function.js"></script>
+  <script src="js/assembly.js"></script>
+  <style>
+    /* 页面效果 */
+    #main{background: white;}
+    .indexTable{position: relative;margin-top: 20px;}
+    .indexTable .columns.columns-right.btn-group.pull-right{position: absolute;top: -67px;right: 0;}
+    .indexTable table th{height: 24px;background-color: #1199D3;}
+    .indexTable table th .th-inner{padding: 0;color: white;font-size: 14px;text-align: center;}
+    .indexTable table td{font-size: 14px;padding: 0!important;text-align: center;}
+    .indexTable table tr{cursor: pointer;}
+    .indexTable table tr.bg td{background-color: #BBBBBB;}
+    .indexTable{
+      display: inline-block;
+      width: 48%;
+    }
+    #monitorList{
+      display: inline-block;
+      box-shadow: 1px 1px 10px rgba(0,0,0,.2);
+      width: 48%;
+      margin-left: 3%;
+      padding: 10px;
+      border-radius: 10px;
+    }
+    #monitorList li{
+      padding-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="header"></div>
+  <div id="manageNav"></div>
+  <div id="main">
+    <!-- 面包屑 -->
+    <div id="sidebar">
+      <img src="../img/nac.png" />
+      <!-- <a href="home.html">首页</a>> -->
+      <a href="javascript:void(0)">监控</a>>
+      <a href="javascript:void(0)">监控记录</a>
+    </div>
+    <!-- 操作组 -->
+    <div id="operationGroup">
+      <b>监控时间范围：</b>
+      <input type="text" id="startTime" class="op_input" onfocus="WdatePicker({ dateFmt:'yyyy-MM-dd'})" placeholder="请选择开始时间" autocomplete="off">
+      <b>——</b>
+      <input type="text" id="endtTime" class="op_input" onfocus="WdatePicker({ dateFmt:'yyyy-MM-dd'})" placeholder="请选择开始时间" autocomplete="off">
+      <span class="op_btn" onclick="scheduleList()" style="color:#1199D3;">查询</span>	
+    </div>
+    <!-- 表格 -->
+    <div class="indexTable">
+      <table id="indexTable" data-toggle="table"></table>
+    </div>
+    <!-- 监控记录 -->
+    <ul id="monitorList">
+      <li>暂无</li>
+    </ul>
+     <!-- 弹框 -->
+     <div class="mask"></div>
+  </div>
+  <script>
+    $(function(){
+      // 页面初始化
+      pageInit();
+      // 初始化头部
+      new Header('#header');
+      // 初始化管理导航
+      new ManageNav('#manageNav');
+      // 监控列表
+      monitorList();
+    })
+  </script>
+  <script>
+    var tableRow = null;
+    // 页面初始化
+    function pageInit(){
+      tableRow = null;
+    }
+    // 监控列表
+    function monitorList(){
+      $.ajax({
+        type: "POST",
+        url: reqDomain + "/schedule/monitor_listing",
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function (data) {
+          if(data.code == '200'){
+            $("#indexTable").bootstrapTable('load',data.result)
+          }
+        }
+      });
+    }
+    $("#indexTable").bootstrapTable({
+      sidePagination: "client",
+      showExport: true,
+      exportDataType: 'all',
+      clickToSelect: true,
+      align:'center',
+      columns: [{
+        field: 'userName',
+        title: '设备箱号'
+      }, {
+        field: 'name',
+        title: '设备编号'
+      }]
+    });
+    $('#indexTable').on('click-row.bs.table',function(e,row,element){
+      $(element).addClass('bg').siblings().removeClass('bg');
+      tableRow = row;
+    })
+    // 点击叉号
+    function closeMask(){
+      $('.mask').fadeOut(300);
+      $('.mask>div').remove();
+    }
+  </script>
+</body>
+</html>

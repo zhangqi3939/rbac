@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="shortcut icon" href="../img/icon/lenglian.ico">
+  <link rel="stylesheet" href="../css/bootstrap.min.css">
+  <link rel="stylesheet" href="../css/bootstrap-table.css">
+  <link rel="stylesheet" href="../css/bootstrap-multiselect.min.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../publicJS/jquery-2.1.0.js"></script>
+  <script src="../publicJS/bootstrap.min.js"></script>
+  <script src="../publicJS/bootstrap-table.js"></script>
+  <script src="../publicJS/bootstrap-multiselect.min.js"></script>
+  <script src="../publicJS/bootstrap-table-zh-CN.min.js?v=20191213"></script>
+  <script src="../publicJS/tableExport.min.js?v=20191213"></script>
+  <script src="../publicJS/bootstrap-table-export.min.js?v=20191213"></script>
+  <script src="../publicJS/echarts.js"></script>
+  <script src="../publicJS/reqDomain.js"></script>
+  <script src="../plugs/date/WdatePicker.js"></script>
+  <script src="../plugs/layer/layer.js"></script>
+  <script src="js/function.js"></script>
+  <script src="js/assembly.js"></script>
+  <style>
+    /* 页面效果 */
+    #main{background: white;}
+    #equi_list{width: 150px;height: 40px;}
+    .indexTable{position: relative;margin-top: 20px;}
+    .indexTable table tr.bg td{background-color: #e6e6e6;}
+  </style>
+</head>
+<body>
+  <div id="header"></div>
+  <div id="nav"></div>
+  <div id="main">
+    <!-- 面包屑 -->
+    <ol class="breadcrumb">
+      <li><a href="cold.html">首页</a></li>
+      <li><a href="#">报表</a></li>
+      <li class="active">运行时长</li>
+    </ol>
+    <!-- 操作组 -->
+    <div id="operationGroup">
+      <select class="op_sel" id="equi_list" multiple></select>
+      <b>起止时间：</b>
+      <input type="text" id="startTime" class="op_input" onfocus="WdatePicker({ dateFmt:'yyyy-MM-dd HH:mm'})" placeholder="请选择开始时间" autocomplete="off">
+      <b>--</b>
+      <input type="text" id="endTime" class="op_input Wdate" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm',minDate:'#F{$dp.$D(\'startTime\')}'});" placeholder="请选择结束时间" autocomplete="off">
+      <span class="op_btn" onclick="search()" style="color:#1199D3;">查询</span>	
+    </div>
+    <!-- 柱状图 -->
+    <div id="chart_equi" style="width: 100%;height: 300px;"></div>
+    <!-- 表格 -->
+    <div class="indexTable" id="scroll-1" style="margin-bottom: 10px;">
+      <table id="indexTable"></table>
+    </div>
+  </div>
+  <script>
+    $(function(){
+    	$('#home').prop('href',window.localStorage.getItem('homePage')+'.html')
+      // 初始化头部
+      new Header('#header');
+      // 初始化导航
+      new Nav('#nav');
+      // 设备列表
+      equi_list();
+    })
+  </script>
+  <script>
+    // 设备下拉列表
+    function equi_list(){
+      $.ajax({
+        async: false,
+        cache: false,
+        type: 'POST',
+        url: reqDomain + "/device/box_list", 
+        dataType: "json",
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function(data) {
+          if(data.code == 200) {
+            var boxhtml = "";
+            for(var i = 0; i < data.result.length; i++) {
+              if(data.result[i].name == null) {
+                data.result[i].name = data.result[i].box_id;
+              }
+              boxhtml += "<option value='" + data.result[i].box_id + "'>" + data.result[i].name +'（'+data.result[i].box_id+ "）</option>";
+            };
+            $("#equi_list").html(boxhtml);
+            $("#equi_list").multiselect({
+              buttonWidth: '200px',
+              selectAllText: '全选',
+              filterPlaceholder: '搜索',
+              includeSelectAllOption: true,
+              enableFiltering: true,
+              nonSelectedText: '最少选一个设备',
+              numberDisplayed: 1,
+              maxHeight: 400,
+            });
+          }
+        }
+      });
+    }
+    $("#indexTable").bootstrapTable({
+      height:300,
+      sidePagination: "client",
+      showExport: true,
+      exportDataType: 'all',
+      align:'center',
+      columns: [{
+        title: '序号',
+        formatter: function(value, row, index) {
+          return index + 1;
+        }
+      }, {
+        field: 'box_id',
+        title: '设备ID'
+      }, {
+        field: 'start_time',
+        title: '开始时间'
+      }, {
+        field: 'end_time',
+        title: '结束时间'
+      }, {
+        field: 'run_time',
+        title: '运行时长（h）'
+      }]
+    });
+    // 查询
+    function search(){
+      if($("#equi_list").val() == null){
+        layer.alert('至少选择一个设备！');
+        return false;
+      }
+      if($("#startTime").val() == ''){
+        layer.alert('请选择开始时间！');
+        return false;        
+      }
+      if($("#endTime").val() == ''){
+        layer.alert('请选择结束时间！');
+        return false;        
+      }
+      $.ajax({
+        type: "POST",
+        url: reqDomain + "/report/run_time",
+        data: {
+          "boxIDs": $("#equi_list").val(),
+          "startTime": $("#startTime").val(),
+          "endTime": $("#endTime").val()
+        },
+        dataType: "json",
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function (data) {
+          if(data.code == '200'){
+            var xData = [];
+            var serData = [];
+            for(var i=0;i<data.result.length;i++){
+              data.result[i].start_time = formatTime(data.result[i].start_time);
+              data.result[i].end_time = formatTime(data.result[i].end_time);
+            }
+            for(var j=0;j<data.result.length;j++){
+              xData.push(data.result[j].box_id);
+              serData.push(data.result[j].run_time);
+            }
+            $("#indexTable").bootstrapTable("load",data.result);
+            var myChart = echarts.init(document.getElementById("chart_equi"));
+            option = {
+								title: {
+									text: '运行时长(h)',
+									x: '0',
+									y: '10',
+									textStyle: {
+										color: '#000000',
+										fontSize: '15'
+									},
+								},
+								color: ['#3398DB'],
+								tooltip: {
+									trigger: 'axis',
+									axisPointer: { // 坐标轴指示器，坐标轴触发有效
+										type: 'shadow' // 默认为直线，可选为：'line' | 'shadow'
+									}
+								},
+								grid: {
+									left: '3%',
+									right: '5%',
+									bottom: '3%',
+									containLabel: true
+								},
+								toolbox: {
+							        feature: {
+							            saveAsImage: {}//保存成图片
+							        }
+							    },
+								xAxis: [{
+									type: 'category',
+									data: xData,
+									axisTick: {
+										alignWithLabel: true
+									}
+								}],
+								yAxis: [{
+									type: 'value'
+								}],
+								dataZoom:[
+									{
+										type:'inside',
+										start:80,
+										end:100
+									},
+									{
+										show:true,
+										type:'slider',
+										y:'90%',
+										start:50,
+										end:100
+									}
+								],
+								series: [{
+									type: 'bar',
+									data: serData,
+									large: true,
+									itemStyle: {
+										normal: {
+											color: '#FF0000'
+										}
+									},
+								}]
+							};
+							if(option && typeof option === "object") {
+								myChart.setOption(option, true);
+              }
+              window.addEventListener('resize',function(){
+                myChart.resize();
+              })
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>

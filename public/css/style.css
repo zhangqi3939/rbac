@@ -1,0 +1,85 @@
+/* 初始化样式 */
+*{margin: 0;padding: 0;font-family: '微软雅黑';box-sizing: border-box;}
+html{width: 100%;height: 100%;}
+body{height:100%;overflow: hidden;}
+ul{list-style: none;}
+a{text-decoration: none!important;border:none;outline: none;}
+img{outline: none;border: none;}
+input,button,textarea,select{outline: none;}
+/* 头部样式 */
+#header{width: 100%;height: 50px;background-color: #1199D3;position: relative;z-index: 10000;}
+/*logo*/
+.logo{float: left;height: 100%;}
+.logo *{float: left;}
+.logo img{height: 46px;margin: 2px 10px;}
+.logo span{color: white;line-height: 50px;font-size: 20px;}
+/* 头部右侧 */
+.header_right{float: right;height: 100%;}
+.header_right>div{float: left;padding: 0 15px;border-left: 1px solid white; position: relative;cursor: pointer;}
+.header_right>div>i{float: left;line-height: 50px;color: white;font-size: 20px;text-align: center;}
+.header_right>div ul{display: none;position: absolute;top: 50px;right: 0;min-width: 100%;background-color:white;border: 1px solid #eee;box-shadow: 2px 2px 3px rgba(0,0,0,.5);border-bottom: none;
+}
+.header_right>div ul li{text-align: center;padding: 0 10px;white-space:nowrap;height: 35px;color: #555;line-height: 35px;font-size: 14px;border-bottom: 0;}
+.header_right>div ul li.active,.header_right ul li:hover{background-color: #e1e2e3;}
+.header_right span{color: white;line-height: 50px;margin-left: 10px;margin-right: 5px;}
+/*头部弹框样式*/
+.modal-body .form-control {width: 85%;display: block !important;border: 1px solid #D9D9D9;height: 35px !important;padding: 2px 12px;margin: 0 auto;	margin-bottom: 20px;}
+.modal_radio {line-height: 0px;width: 85%;margin: 0 auto;}
+.modal_radio div {width: 40px;display: inline-block;}
+.modal-backdrop.fade.in{z-index: 10000;}
+.modal.fade.in{z-index: 100000;}
+/*导航*/
+#nav{position: absolute;top: 0;left: 0;padding-top: 50px;background-color: #1199D3;width: 70px;height: 100%;z-index: 100;}
+#nav>a{display: block;width: 100%;height: 80px;text-align: center;	padding-top: 15px;}
+#nav span{color: white;display: block;font-size: 14px;}
+#nav img{margin-bottom: 5px;}
+#nav *.current,#nav *:hover{background-color: #00436B;}
+#nav>div{	text-align: center;height: 80px;padding-top: 15px;position: relative;}
+#nav div div a{width: 120px;height: 40px;display: block;background-color: #1199D3;text-align: center;line-height: 40px;font-size: 14px;color:white;position:relative;}
+#nav div div{position: absolute;top: 0;left: 70px;display: none;}
+/* 管理系统导航 */
+#manageNav{position: absolute;top: 0;left: 0;padding-top: 50px;background-color: #1199D3;width: 70px;height: 100%;z-index: 100;}
+#manageNav>a{display: block;width: 100%;text-align: center;	padding: 15px 0;color: white;font-size: 14px;}
+#manageNav a.current,#manageNav a:hover{background-color: #00436B;}
+#manageNav i{display: block;font-size: 20px;margin: 0 auto 5px;color: white;}
+#manageNav div.navList{padding: 15px 0;cursor: pointer;position: relative;}
+#manageNav div.navList:hover,#manageNav div.navList.current{background-color: #00436B;}
+#manageNav div{color: white;text-align: center;font-size: 14px;}
+#manageNav div.navList div{display: none;position: absolute;top: 0;left: 70px;}
+#manageNav div.navList:hover div{display: block;}
+#manageNav div.navList div a{background-color: #1199D3;display: block;width: 50px; height:35px;text-align: center;color: white;line-height: 35px;}
+#manageNav div.navList div a:hover,#manageNav div.navList div a.current{background-color: #00436B;}
+
+/*主要部分*/
+#main{background-color: #e9e9e9;width: 100%;height: 100%;padding: 60px 10px 10px 80px;min-width: 1230px!important;overflow-y: auto;position: absolute;top: 0;left: 0;overflow-x: hidden;}
+/* 表格内容不换行 */
+table td{white-space:nowrap;}
+/* 地图信息 */
+#mapWindowInfo{font-size: 13px;width: 250px!important;}
+#mapWindowInfo td.b{font-weight: bold;text-indent: 0px;vertical-align: top;width: 70px;}
+#mapWindowInfo td{white-space: normal;line-height: 22px;}
+/* 顶部操作组 */
+.opGroup::after,#operationGroup::after{content: '';display: block;clear: both;}
+.opGroup .op_btn,#operationGroup .op_btn{margin-right: 20px;cursor: pointer;float:left;padding: 6px 12px;font-weight: 400;font-size: 14px;white-space: nowrap;border: 1px solid #ccc;border-radius: 4px;}
+.opGroup .op_btn:hover,#operationGroup .op_btn:hover{color: #333;background-color: #e6e6e6;border-color: #adadad;}
+.opGroup .op_sel,#operationGroup .op_sel{width: 150px;height: 34px;float: left;margin-right: 20px;}
+.opGroup .op_sel+.btn-group,#operationGroup .op_sel+.btn-group{float: left;margin-right: 20px;}
+.fixed-table-toolbar .bs-bars, .fixed-table-toolbar .columns, .fixed-table-toolbar .search{
+  margin: 0;line-height: normal;
+}
+.fixed-table-toolbar{
+  margin-bottom: 10px;
+}
+.boxLatestTable .fixed-table-toolbar{
+  margin-bottom: 0;
+}
+.opGroup select,#operationGroup select{float: left;outline: none;border: 1px solid #ccc;padding: 6px 12px;font-size: 14px;border-radius: 4px;cursor: pointer;margin-right: 20px;color: black;white-space: nowrap;font-family: '微软雅黑';font-weight: 400;height: 33px;line-height: 33px;}
+.opGroup>b,#operationGroup>b{font-weight: normal;padding: 6px 12px;float: left;margin-right: 10px;}
+.opGroup .op_input,#operationGroup .op_input{width: 165px;float: left;border: 1px solid #ccc;border-radius: 4px;color: black;background: white;margin-right: 20px;padding: 6px 12px;cursor: pointer;font-size: 14px;}
+.opGroup .op_input:focus,#operationGro up .op_input:focus{border-color: #66afe9;-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6);box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6);}
+/* 遮罩层 */
+.mask{width: 100%;height: 100%;background: rgba(0,0,0,0.2);position: fixed;top: 0;left: 0;display: none;z-index: 100;}
+.mask_title{height: 30px;text-align: center;background: #1199D3;color: white;position: relative;font-size: 14px;line-height: 30px;}
+.close {float: right;font-size: 21px;font-weight: 700;line-height: 30px;color: #000;text-shadow: 0 1px 0 #fff;filter: alpha(opacity=20);opacity: .2;margin-right: 5px;}
+.myform_button{text-align: center;margin-top: 10px;clear:both;}
+.myform_button button{padding: 0;width: 74px;height: 26px;color: #fff;background-color: #1199D3;border-color: #1199D3;}

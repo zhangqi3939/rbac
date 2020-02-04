@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="shortcut icon" href="../img/icon/lenglian.ico">
+  <link rel="stylesheet" href="../css/style.css?v=20191213">
+  <link rel="stylesheet" href="../css/bootstrap.min.css?v=20191213">
+  <link rel="stylesheet" href="../css/bootstrap-table.css?v=20191213">
+  <link rel="stylesheet" href="../css/bootstrap-multiselect.min.css?v=20191213">
+  <!--<link rel="stylesheet" href="../css/bootstrap-table-fixed-columns.css?v=20191213">-->
+  <link rel="stylesheet" href="../css/home.css?v=20191213">
+  <script src="../publicJS/jquery-2.1.0.js?v=20191213"></script>
+  <script src="../publicJS/bootstrap.min.js?v=20191213"></script>
+  <script src="../publicJS/bootstrap-table.js?v=20191213"></script>
+  <script src="../publicJS/bootstrap-table-zh-CN.min.js?v=20191213"></script>
+  <script src="../publicJS/bootstrap-multiselect.min.js?v=20191213"></script>
+  <script src="../publicJS/tableExport.min.js?v=20191213"></script>
+  <script src="../publicJS/bootstrap-table-export.min.js?v=20191213"></script>
+  <!--<script src="../publicJS/bootstrap-table-fixed-columns.js?v=20191213"></script>-->
+  <script src="../publicJS/echarts.js?v=20191213"></script>
+  <script src="../publicJS/reqDomain.js?v=20191213"></script>
+  <script src="../plugs/layer/layer.js?v=20191213"></script>
+  <script src="../plugs/date/WdatePicker.js?v=20191213"></script>
+  <script src="js/function.js?v=20191220"></script>
+  <script src="js/assembly.js?v=20191213"></script>
+  <style type="text/css">
+  	.statusRight>div{height: 180px;background: white!important;}
+  	#tabbar li{width: 16.4%;}
+  	.stateBtn li{width: 24%;}
+  </style>
+</head>
+<body>
+  <div id="header"></div>
+  <div id="nav"></div>
+  <div id="main">
+    <!-- 数据表格 -->
+    <div class="boxLatest">
+      <div class="tableBtn">
+        <select id="groupList"></select>
+        <div class="opTable">
+          <button id="changeWidth">
+            <i class="glyphicon glyphicon-resize-horizontal"></i>
+          </button>
+          <button id="changeFull">
+            <i class="glyphicon glyphicon-resize-full"></i>
+          </button>
+        </div>
+      </div>
+      <div class="boxLatestTable">
+        <table id="indexTable" data-toggle="table"></table>
+      </div>
+    </div>
+    <!-- 统计、地图 -->
+    <div class="stateMap">
+      <ul class="stateBtn">
+        <li class="all">
+          <i class="glyphicon glyphicon-user"></i>
+          <span id='allNum'>0000</span>
+          <b>全部</b>
+        </li>
+        <li class="onLine">
+          <i class="glyphicon glyphicon-ok"></i>
+          <span id='onLineNum'>0000</span>
+          <b>在线</b>
+        </li>
+        <li class="outLine">
+          <img src="../img/outline.png"/>
+          <span id='outLineNum'>0000</span>
+          <b>离线</b>
+        </li>
+        <!--<li class="dormant">
+          <i class="glyphicon glyphicon-wrench"></i>
+          <span id='dormantNum'>0000</span>
+          <b>低频</b>
+        </li>-->
+        <li class="alarm">
+          <i class="glyphicon glyphicon-exclamation-sign"></i>
+          <span id='alarmNum'>0000</span>
+          <b>报警</b>
+        </li>
+      </ul>
+      <div class="map">
+        <button class='mapBtn'>百度地图</button>
+        <button class="mapBtn">谷歌地图</button>
+        <a href="full_map2.html" class="full">
+          <img src="../img/allser.png" alt="" />
+        </a>
+        <div id="map_container"></div>
+      </div>
+    </div>
+    <!-- 底部选项卡 -->
+    <ul id="tabbar">
+      <li class="current">状态信息</li>
+      <li>参数设置</li>
+      <li>报警设置</li>
+      <li>分组设置</li>
+      <li>数据查询</li>
+      <li>曲线查询</li>
+    </ul>
+    <!-- 消息侧栏 -->
+    <div id="msgList">
+      <img src="../img/p.png" alt="" />
+			<div class="msg_title">消息列表</div>
+			<div class="msgList">
+        <div class="more"></div>
+        <ul class="monList"></ul>
+        <div class="more"></div>
+        <ul class="alarmList"></ul>
+			</div>
+			<div class="msgListDetail"></div>
+    </div>
+    <!-- 消息遮罩层 -->
+    <div id="mask"></div>
+    <!-- 底部功能 -->
+    <ul id="tabMain">
+      <!-- 状态信息 -->
+      <li class="current">
+        <div class="statusLeft">
+          <h2 class="equiName">设备：</h2>
+          <dl class="refrigerator">
+            <dt>传感器</dt>
+            <dd>箱内温度1：（℃）</dd>
+            <dd>箱内温度2：（℃）</dd>
+            <dd>箱内温度3：（℃）</dd>
+            <dd>箱内温度4：（℃）</dd>
+            <dd>箱外温度5：（℃）</dd>
+            <dd>电池电压：（V）</dd>
+            <dd>X轴：（mg）</dd>
+            <dd>Y轴：（mg）</dd>
+            <dd>Z轴：（mg）</dd>
+            <dd>电量：（%）</dd>
+            <dd>采样频率：（分）</dd>
+            <dd>数据时间：</dd>
+            <dd style="width:100%;">地址：</dd>
+          </dl>
+        </div>
+        <!-- 右侧曲线图 -->
+        <div class="statusRight">
+          <div id="chart2"></div>
+        </div>
+      </li>      
+      <!-- 参数设置 -->
+      <li>
+          <h2 class="equiName">设备：</h2>
+          <div class="preference_table">
+            <table>
+              <tr>
+                <th>参数</th>
+                <th>当前值</th>
+                <th>预配置</th>
+              </tr>
+              <tr>
+                <td>箱号</td>
+                <td class="perferqk" id="preferences_name"></td>
+              </tr>
+              <tr>
+                <td>IMIS号</td>
+                <td class="perferqk" id="preferences_IMIS"></td>
+              </tr>
+              <tr>
+                <td>心跳时间</td>
+                <td class="perferqk" id="hearttime"></td>
+              </tr>
+              <tr>
+                <td>强制不休眠</td>
+                <td>
+                  <select class="form-control" id="dormancy" disabled>
+                    <option value="0">正常模式</option>
+                    <option value="1">强制不休眠</option>
+                  </select>
+                </td>
+                <td>
+                  <select class="form-control" id="dormancy_new">
+                    <option value="0">正常模式</option>
+                    <option value="1">强制不休眠</option>
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <td>数据上传时间</td>
+                <td>
+                  <select class="form-control" id="preferences_up_time" disabled>
+                    <option value="300">5分钟</option>
+                    <option value="600">10分钟</option>
+                    <option value="1200">20分钟</option>
+                    <option value="1800">半小时</option>
+                    <option value="3600">1小时</option>
+                    <option value="86400">休眠</option>
+                  </select>
+                </td>
+                <td>
+                  <select class="form-control" id="preferences_up_time_new">
+                    <option value="300">5分钟</option>
+                    <option value="600">10分钟</option>
+                    <option value="1200">20分钟</option>
+                    <option value="1800">半小时</option>
+                    <option value="3600">1小时</option>
+                    <option value="86400">休眠</option>
+                  </select>
+                </td>
+              </tr>
+            </table>
+            <div class="myform_button">
+              <button type="button" style="margin-right:4%" onclick="box_param_save()">保存</button>
+            </div>
+          </div>
+          <div class="jx">
+            <img src="../img/jxWarm.png" alt="" />
+          </div>
+      </li>
+      <!-- 报警设置 -->
+      <li>
+          <h2 class="equiName">设备：</h2>
+          <div class="alarmtable">
+            <table>
+              <tr>
+                <td id="alarmsetting_text1">集装箱</td>
+                <td id="box_id_name"></td>
+              </tr>
+              <tr>
+                <td id="alarmsetting_text2">报警电话</td>
+                <td><input type="text" class="form-control" placeholder="报警电话（最多输入四个，用英文逗号隔开）" style="width: 93%;" id="alarmPhone" pattern="^1[35789][0-9]{9}(,1[35789][0-9]{9})*$ " onblur="pho(this.value)" onkeyup="this.value=this.value.replace(/[^\-?\d,]/g,'')"></td>
+              </tr>
+              <tr>
+                <td id="alarmsetting_text3">发送间隔（分）</td>
+                <td><input type="text" class="form-control" placeholder="发送间隔" style="width: 93%;" id="stripTime" value="30" onkeyup="testMin(this.value)"></td>
+              </tr>
+              <tr>
+                <td class="box_checkbox" id="alarmsetting_text4">箱外温度（℃）</td>
+                <td class="box_in">
+                  <select class="form-control" style="width: 22%;" id="t1On">
+                    <option value="0" id="alarmsetting_text4_0">不启用</option>
+                    <option value="1" id="alarmsetting_text4_1">启用上下限</option>
+                    <option value="2" id="alarmsetting_text4_2">随目标温度</option>
+                  </select>
+                  <div class="boxdouble">
+                    <input type="text" onkeyup="this.value=this.value.replace(/[^\-?\d.]/g,'')" class="form-control text01" disabled="disabled" placeholder="上限" id="t1High">
+                    <input type="text" onkeyup="this.value=this.value.replace(/[^\-?\d.]/g,'')" class="form-control text02" disabled="disabled" placeholder="下限" id="t1Low">
+                  </div>
+              </tr>
+              <tr>
+                <td class="box_checkbox" id="alarmsetting_text5">箱内中部温度（℃）</td>
+                <td class="box_in">
+                  <select class="form-control" style="width: 22%;" id="t2On">
+                    <option value="0" id="alarmsetting_text5_0">不启用</option>
+                    <option value="1" id="alarmsetting_text5_1">启用上下限</option>
+                    <option value="2" id="alarmsetting_text5_2">随目标温度</option>
+                  </select>
+                  <div class="boxdouble">
+                    <input type="text" onkeyup="this.value=this.value.replace(/[^\-?\d.]/g,'')" class="form-control text01" disabled="disabled" placeholder="上限" id="t2High">
+                    <input type="text" onkeyup="this.value=this.value.replace(/[^\-?\d.]/g,'')" class="form-control text02" disabled="disabled" placeholder="下限" id="t2Low">
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td class="box_checkbox" id="alarmsetting_text6">箱内后部温度（℃）</td>
+                <td class="box_in">
+                  <select class="form-control" style="width: 22%;" id="t3On">
+                    <option value="0" id="alarmsetting_text6_0">不启用</option>
+                    <option value="1" id="alarmsetting_text6_1">启用上下限</option>
+                    <option value="2" id="alarmsetting_text6_2">随目标温度</option>
+                  </select>
+                  <div class="boxdouble">
+                    <input type="text" onkeyup="this.value=this.value.replace(/[^\-?\d.]/g,'')" class="form-control text01" disabled="disabled" placeholder="上限" id="t3High">
+                    <input type="text" onkeyup="this.value=this.value.replace(/[^\-?\d.]/g,'')" class="form-control text02" disabled="disabled" placeholder="下限" id="t3Low">
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td class="box_checkbox" id="alarmsetting_text9">电瓶电压（V）</td>
+                <td class="box_in">
+                  <select class="form-control" style="width: 22%;" id="v1On">
+                    <option value="0" id="alarmsetting_text9_0">不启用</option>
+                    <option value="1" id="alarmsetting_text9_1">启用上下限</option>
+
+                  </select>
+                  <div class="boxdouble">
+                    <input type="text" onkeyup="this.value=this.value.replace(/[^\-?\d.]/g,'')" class="form-control text01" disabled="disabled" placeholder="上限" id="v1High">
+                    <input type="text" onkeyup="this.value=this.value.replace(/[^\-?\d.]/g,'')" class="form-control text02" disabled="disabled" placeholder="下限" id="v1Low">
+                  </div>
+                </td>
+              </tr>
+            </table>
+            <div class="myform_button">
+              <button type="button" class="btn btn-info" style="margin-right:4%" onclick="alarm_save()">保存</button>
+            </div>
+          </div>
+          <div class="jx">
+            <img src="../img/jx1Warm.png" alt="" />
+          </div>
+      </li>
+      <!-- 分组设置 -->
+      <li>
+          <h2 class="equiName">设备：</h2>
+          <div class="grouptable">
+            <div>
+              <table>
+                <tr>
+                  <td id="grouping_text1">设备名称</td>
+                  <td><input type="text" class="form-control" placeholder="" id="grouping_box_name" disabled="disabled"></td>
+                </tr>
+                <tr>
+                  <td id="grouping_text2">设备ID</td>
+                  <td><input type="text" class="form-control" placeholder="" id="grouping_box_id" disabled="disabled"></td>
+                </tr>
+                <tr>
+                  <td id="grouping_text3">分组</td>
+                  <td>
+                    <select class="form-control" id="grouping_list">
+  
+                    </select>
+                  </td>
+                </tr>
+              </table>
+              <div class="group_apply">
+                <div>将分组设置应用到：</div>
+                <select id="sel_productTag" multiple></select>
+              </div>
+            </div>
+            <div class="myform_button">
+              <button type="button" class="btn btn-info" onclick="box_group_save()">保存</button>
+            </div>
+          </div>
+          <div class="jx">
+            <img src="../img/jxWarm.png" alt="" />
+          </div>
+      </li>
+      <!-- 数据查询 -->
+      <li>
+        <h2 class="equiName">设备：</h2>
+        <div class="timeGroup">
+          <input type="text" autocomplete="off" onfocus="WdatePicker({ dateFmt:'yyyy-MM-dd HH:mm'})" id="starttime" name="starttime" class="form-control Wdate" placeholder="请选择开始时间" />
+          <input type="text" autocomplete="off" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm',minDate:'#F{$dp.$D(\'starttime\')}'});" id="endtime" name="endtime" class="form-control Wdate" placeholder="请选择结束时间" />
+          <button type="button" class="btn btn-info" onclick="pivot(1)">查询</button>
+        </div>
+        <div class="dataTable">							
+          <table id="dataTable" data-toggle="table"></table>
+        </div>
+        <div class="table_bottom">
+          <div class="t_left">
+            <p id="total"></p><span id="pivot_text21">每页显示</span>
+            <select class="form-control" style="width:10%;" id="perPage" onchange="pivot(1)">
+              <option value="10">10</option>
+              <option value="15">15</option>
+              <option value="20">20</option>
+              <option value="25">25</option>
+              <option value="30">30</option>
+            </select>
+          </div>
+          <div class="t_right">
+            <nav aria-label="Page navigation">
+              <ul class="pagination" id="pivot_page">
+
+              </ul>
+            </nav>
+          </div>
+          <div class="clear"></div>
+        </div>
+      </li>
+      <!-- 曲线查询 -->
+      <li>
+        <h2 class="equiName">设备：</h2>
+        <div class="timeGroup">
+          <input type="text" autocomplete="off" onfocus="WdatePicker({ dateFmt:'yyyy-MM-dd HH:mm'})" id="starttime1" name="starttime" class="form-control Wdate" placeholder="请选择开始时间" />
+          <input type="text" autocomplete="off" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm',minDate:'#F{$dp.$D(\'starttime1\')}'});" id="endtime1" name="endtime" class="form-control Wdate" placeholder="请选择结束时间" />
+          <button type="button" class="btn btn-info" onclick="curve()">查询</button>
+        </div>
+        <div class="curve_chart" id="curve_chart2"></div>
+      </li>
+    </ul>
+  </div>
+  <script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=455d374b510001a6acfcf5bd90367fb2"></script>
+  <script src="http://maps.google.cn/maps/api/js?v=3.20&region=cn&language=zh-CN&key=AIzaSyBvympyc9L86yaC2TWMb_RXzyc1UY51rOo"></script>
+  <script src="js/map2.js?v=20191219"></script>
+  <script src="js/option2.js?v=20191219"></script>
+  <script>
+    // 页面初始化
+    pageInit();
+    // 初始化头部
+    new Header('#header');
+    // 初始化导航
+    new Nav('#nav');
+    // 获取分组列表
+    getGroupList();
+    //获取设备最新数据
+    searchBox();
+  </script>
+  <script>
+    // 每三分钟更新一次数据
+    setInterval(function(){ 
+      pageInit()
+      getGroupList();
+      searchBox();
+      $('.msgList ul').empty();
+      $('.msgListDetail').empty();
+    },180000)
+  </script>
+</body>
+</html>

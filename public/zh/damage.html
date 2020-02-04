@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="shortcut icon" href="../img/icon/lenglian.ico">
+  <link rel="shortcut icon" href="../img/icon/lenglian.ico">
+  <link rel="stylesheet" href="../css/bootstrap.min.css?v=20191213">
+  <link rel="stylesheet" href="../css/bootstrap-table.css?v=20191213">
+  <link rel="stylesheet" href="../css/style.css?v=20191213">
+  <script src="../publicJS/jquery-2.1.0.js?v=20191213"></script>
+  <script src="../publicJS/bootstrap.min.js?v=20191213"></script>
+  <script src="../publicJS/bootstrap-table.js?v=20191213"></script>
+  <script src="../publicJS/bootstrap-table-zh-CN.min.js?v=20191213"></script>
+  <script src="../publicJS/tableExport.min.js?v=20191213"></script>
+  <script src="../publicJS/bootstrap-table-export.min.js?v=20191213"></script>
+  <script src="../publicJS/reqDomain.js?v=20191213"></script>
+  <script src="../plugs/layer/layer.js?v=20191213"></script>
+  <script src="../plugs/date/WdatePicker.js?v=20191213"></script>
+  <script src="js/function.js?v=20191213"></script>
+  <script src="js/assembly.js?v=20191213"></script>
+  <style>
+    /* 页面效果 */
+    #main{background: white;}
+    #list_type+div{float: left;}
+    .opGroup{margin-bottom: 10px;}
+    .indexTable table tr.bg td{background-color: #e6e6e6;}
+    /* 弹框 */
+    .mask>div{width: 650px;position: absolute;top: 50%;left: 50%;background-color: white;border: 1px solid #45C5F8;border-radius: 10px;height: 600px;margin: -300px 0 0 -325px;}
+    .mask_main{padding: 10px 0;}
+    .operationItem{height: 500px;width: 50%;float: left;border-left: 1px solid #aaa;padding: 10px 20px;}
+    .mask_main .operationItem:first-child{border: none;}
+    .operationItemTitle{text-align: center;font-weight: bold;font-size: 16px;margin: 0 0 10px 0;}
+    .mask_main form .form-group{margin: 5px 0;position: relative;}
+    .mask_main form .form-group>label{width: 78px;text-align: right;color: #333;font-weight: normal;font-size: 12px;}
+    .mask_main form .form-group>label.required::after{display: block;content: '*';color: red;position: absolute;left: 0;top: 5px;}
+    .mask_main form .form-group .form-control{width: 200px;height: 26px;font-size: 12px;padding: 4px 12px;}
+    /* 车站提示 */
+    .tip{position: absolute;left: 82px;width: 200px;height: 166px;overflow: auto;display: none;z-index: 100;}
+    .tip li{font-size: 12px;padding: 4px 12px;height: 26px;}
+    .tip li:hover{background-color: #e6e6e6;cursor: pointer}
+    /* 已添加集装箱列表  */
+    #box_info dt{margin: 10px 0;}
+    #box_info dd{position: relative;height: 26px;padding: 4px 12px;font-size: 12px;cursor: pointer;}
+    #box_info dd.disabled::after{content: '';position: absolute;top: 0;left: 0;z-index: 100;width: 100;height: 100%;background: rgba(0,0,0,0.4);}
+    .box_op{float: right;}
+    .box_op button{margin-left: 5px;background: none;outline: none;border: none;}
+    .box_detail{width: 250px;position: absolute;bottom: 24px;background-color: white;border-radius: 4px;border: 1px solid #ddd;margin: 0;}
+    .box_detail li{font-size: 12px;color: #333;height: 26px;padding: 4px 12px;}
+    .box_detail li span{float: right;}
+    .box_detail li span:first-child{float: left;}
+    #add_box{display: block;margin: 10px auto;}
+    /* 已添加图片 */
+    #img_info dt{margin: 10px 0;}
+    #img_info dd{display: inline-block;width: 60px;height: 60px;margin: 8px 8px 0 0;position: relative;padding: 0;}
+    #img_info dd span{position: absolute;top: -8px;right: -8px;width: 16px;height: 16px;font-size: 16px;color: white;border-radius: 50%;background-color: #969799;line-height: 16px;text-align: center;cursor: pointer;}
+    #img_info dd span:hover{background-color: #d9534f;}
+    #img_info dd img{width: 100%;height: 100%;cursor: pointer;}
+    /* 添加预览 */
+    #img_list::after{content: '';display: block;clear: both;}
+    #img_list li{float: left;width: 60px;height: 60px;margin: 8px 8px 0 0;position: relative;}
+    #img_list li span{position: absolute;top: -8px;right: -8px;width: 16px;height: 16px;font-size: 16px;color: white;border-radius: 50%;background-color: #969799;line-height: 16px;text-align: center;cursor: pointer;}
+    #img_list li span:hover{background-color: #d9534f;}
+    #img_list li img{width: 100%;height: 100%;cursor: pointer;}
+    .myform_button{padding-top: 15px;}
+  </style>
+</head>
+<body>
+  <div id="header"></div>
+  <div id="nav"></div>
+  <div id="main">
+    <!-- 面包屑 -->
+    <ol class="breadcrumb">
+      <li><a href="cold.html">首页</a></li>
+      <li><a href="#">箱管</a></li>
+      <li class="active">箱损列表</li>
+    </ol>
+    <!-- 操作组 -->
+    <div class="opGroup">
+      <b>操作起止时间：</b>
+      <input type="text" id="start_time" class="op_input" onfocus="WdatePicker({ dateFmt:'yyyy-MM-dd HH:mm:ss'})" placeholder="请选择开始时间" autocomplete="off">
+      <b>--</b>
+      <input type="text" id="end_time" class="op_input Wdate" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss',minDate:'#F{$dp.$D(\'start_time\')}'});" placeholder="请选择结束时间" autocomplete="off">
+      <input type="text" id="keywords" class="op_input" placeholder="发现站">
+      <span class="op_btn" onclick="operationList()" style="color:#1199D3;">查询</span>	
+    </div>
+    <div id="operationGroup">
+      <span class="op_btn" onclick="addDamage()">添加</span>
+      <span class="op_btn" onclick="changeDamage()">修改</span>
+      <span class="op_btn" onclick="deleteDamage()">删除</span> 
+    </div>
+    <!-- 表格 -->
+    <div class="indexTable">
+      <table id="indexTable" data-toggle="table"></table>
+    </div>
+    <!-- 弹框 -->
+    <div class="mask">
+      <div class="addDamage">
+        <div class="mask_title">
+          箱损记录<span class="close">×</span>
+        </div>
+        <div class="mask_main">
+          <div class="operationItem">
+            <div class="operationItemTitle">
+              操作信息
+            </div>
+            <form class="form-inline">
+              <div class="form-group">
+                <label for="handle_station" class="required">发现站：</label>
+                <input type="text" class="form-control station" id="handle_station" placeholder="输入站名或拼音首字母" onkeyup="tip(this)">
+                <ul class="list-group tip"></ul>
+              </div>
+              <div class="form-group">
+                <label for="operation_time" class="required">发现时间：</label>
+                <input type="text" class="form-control" id="operation_time" onfocus="WdatePicker({ dateFmt:'yyyy-MM-dd HH:mm:ss'})" placeholder="请选择洗箱时间" autocomplete="off">
+              </div>
+            </form>
+            <dl class="list-group" id="img_info">
+              <dt>已添加图片:</dt>
+            </dl>
+            <dl class="list-group" id="box_info">
+              <dt>已添加集装箱:</dt>
+              <dd class="list-group-item"></dd>
+            </dl>
+          </div>
+          <div class="operationItem">
+            <div class="operationItemTitle">
+              添加图片
+            </div>
+            <ul id="img_list"></ul>
+            <input type="file" id="addImg" accept="image/*">
+            <form class="form-inline">
+              <div class="form-group">
+                <label for="box_num" class="required">箱号：</label>
+                <input type="text" class="form-control" id="box_num"  autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label for="abnormal_situation">异常情况：</label>
+                <input type="text" class="form-control" id="abnormal_situation"  autocomplete="off">
+              </div>
+              <button type="button" class="btn btn-default btn-sm" id="add_box" onclick="addDamageBox()">保存集装箱</button>
+            </form>
+          </div>
+          <div class="myform_button">
+            <button type="button" class="btn btn-info" onclick="saveDamage()">保存操作</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    $(function(){
+      // 页面初始化
+      pageInit();
+      // 初始化头部
+      new Header('#header');
+      // 初始化导航
+      new Nav('#nav');
+      // 箱损列表
+      damageList()
+    })
+  </script>
+  <script>
+    var tableRow = null;
+    var list_type = '';
+    var list_id = '';
+    var box_info = [];
+    var box_id = '';
+    var img_info = []; //添加图片列表
+    var img_list = []; //获取已添加图片列表
+    function pageInit(){
+      tableRow = null;
+      list_type = '';
+      list_id = '';
+      box_info = [];
+      box_id = '';
+      img_info = [];
+      img_list = [];
+      $('#box_num').val('TBJU190')
+      $('#addImg').val('')
+    }
+    // 箱损列表
+    function damageList(){
+      $.ajax({
+        type: 'post',
+        url: reqDomain + '/container/station/operation_list',
+        data: {
+          channel: 'web',
+          list_type: 6,
+          startTime: $('#start_time').val(),
+          endTime: $('#end_time').val(),
+          keywords: $('#keywords').val(),
+        },
+        success: function(data){
+          if(data.code == 200){
+            tableRow = null
+            $("#indexTable").bootstrapTable("load",data.result.operationInfo);
+          }
+        }
+      })
+    }
+    //箱损表格
+    $('#indexTable').bootstrapTable({
+      sortable:true,
+      height: document.getElementsByTagName('body')[0].scrollHeight-200,
+      sortOrder:'travel_id desc',
+      toolbar: '#operationGroup',
+      clickToSelect: true,
+      showExport: true,
+      pagination: true,
+      search: true,
+	    searchTimeOut: 700,
+      paginationLoop: true,
+      pageNumber: 1,
+      pageSize: 15,
+      exportDataType: 'all',
+      columns:[
+        {
+          title:'序号',
+          formatter: function(value, row, index) {
+            return index + 1;
+          },
+          width:'10%',
+        },
+        {
+          title:'标题',
+          field:'title',
+        },
+        {
+          title: '办理站',
+          field: 'handle_station'
+        },
+        {
+          title:'操作时间',
+          field:'operation_time',
+          formatter: function(value){
+            return formatTime(value);
+          }
+        },
+      ]
+    });
+    // 点击表格行
+    $("#indexTable").on('click-row.bs.table', function(e, row, element) {
+      $(element).addClass('bg').siblings().removeClass('bg');
+      tableRow = row;
+      list_id = tableRow.list_id
+    }) 
+    // 添加箱损
+    function addDamage(){
+      pageInit();
+      $('#handle_station').val('')
+      $('#operation_time').val('')
+      $('.mask').show();
+      showDamageBoxList()
+      showImg()
+      showImgList()
+    }
+    //已添加集装箱
+    function showDamageBoxList(){
+      $('#box_info dd').remove();
+      if(box_info.length == 0){
+        $('#box_info').append('<dd class="list-group-item"><span>暂无</span></dd>')
+      }else{
+        for(var i=0;i<box_info.length;i++){
+          $('#box_info').append('<dd class="list-group-item"><span>'+box_info[i].box_num+'</span><span class="box_op"><button class="glyphicon glyphicon-edit" onclick="editDamageBox('+i+')"></button><button class="glyphicon glyphicon-remove" onclick="deleteBox('+i+')"></button></span></dd>')
+        }
+      }
+      $('#box_info dd').hover(function(){
+        for(var i=0;i<box_info.length;i++){
+          if(box_info[i].box_num == $(this).find('span:eq(0)').text()){
+            var str = '<ul class="list-group box_detail">';
+            str += '<li class="list-group-item"><span>箱号：</span><span>'+box_info[i].box_num+'</span></li>';
+            str += '<li class="list-group-item"><span>异常情况：</span><span>'+box_info[i].abnormal_situation+'</span></li><ul>';
+            $(this).append(str);      
+            break;
+          }
+        }
+      },function(){
+        $('.box_detail').remove();
+      })
+    }
+    // 添加箱子
+    function addDamageBox(){
+      if($('#box_num').val().length != 11){
+        layer.msg('请输入十一位箱号')
+      }else{
+        if(box_info.length == 0){
+          box_info.push({
+            'id': box_id,
+            'box_num': $('#box_num').val(),
+            'abnormal_situation': $('#abnormal_situation').val(),
+          })          
+        }else{
+          var change = false
+          for(var i=0;i<box_info.length;i++){
+            if(box_info[i].id == box_id && box_id != ''){
+              change = true;
+              box_info[i].id = box_id
+              box_info[i].box_num = $('#box_num').val()
+              box_info[i].abnormal_situation = $('#abnormal_situation').val()
+            }
+          }
+          if(!change){
+            var have = false;
+            for(var i=0;i<box_info.length;i++){
+              if(box_info[i].box_num == $('#box_num').val()){
+                have = true;
+                break;
+              }
+            }
+            if(have){
+              layer.msg('该箱号已被添加，请确认箱号')
+              return false
+              $('#box_num').val('TBJU190')
+            }else{
+              box_info.push({
+                'id': box_id,
+                'box_num': $('#box_num').val(),
+                'abnormal_situation': $('#abnormal_situation').val(),
+              })
+            }
+          }
+        }
+        box_id = '';
+        $('#box_num').val('TBJU190')
+        layer.msg('保存集装箱成功')
+        showDamageBoxList()
+      }
+    }
+    // 选择图片
+    $('#addImg').change(function(){
+      if(this.files[0].size / 1024 / 1024 > 1){
+        layer.msg('上传的图片不能大于1M');
+        $(this).val('')
+        return false;
+      }
+      img_info.push({
+        // 不兼容id9
+        src: window.URL.createObjectURL(this.files[0]),
+        files: this.files[0]
+      })
+      showImg()
+    })
+    // 图片预览
+    function showImg(){
+      $('#img_list').empty();
+      if(img_info.length == 0){
+        $('#img_list').append('<li><img src="../img/null_img.png" /></li>')
+      }else{
+        for(var i=0;i<img_info.length;i++){
+          $('#img_list').append('<li><span>&times;</span><img src="'+img_info[i].src+'" onclick="openImg(this)" /></li>')
+        }
+      }
+      $('#img_list span').click(function(){
+        var deleteSrc = $(this).next('img').attr('src')
+        layer.confirm('确定要删除该图片么？',function(){
+          for(var i=0;i<img_info.length;i++){
+            if(img_info[i].src == deleteSrc){
+              img_info.splice(i,1);
+              layer.msg('删除成功', {icon: 1});
+              showImg()
+              break;
+            }
+          }
+        })
+      })
+    }
+    // 显示大图
+    function openImg(e){
+      window.open($(e).attr('src'))
+    }
+    // 保存
+    function saveDamage(){
+      if($('#handle_station').val() == '' || $('#operation_time').val() == ''){
+        layer.msg('请填写必填项！');
+        return false
+      }else if(box_info.length == ''){
+        layer.msg('至少添加一个集装箱！');
+        return false
+      }
+      var formData = new FormData();
+      formData.append('channel','web');
+      formData.append('list_id',list_id);
+      formData.append('list_type',6);
+      formData.append('handle_station',$('#handle_station').val());
+      formData.append('operation_time',$('#operation_time').val());
+      formData.append('box_info',JSON.stringify(box_info));
+      if(img_info.length != 0){
+        for(var i=0;i<img_info.length;i++){
+          formData.append('file'+i,img_info[i].files,img_info[i].files.name)
+        }
+      }
+      $.ajax({        
+        type: 'POST',
+        url: reqDomain + "/container/station/operation_save",
+        dataType: 'json',
+        processData: false,
+        contentType: false,
+        data: formData,
+        success: function(data){
+          if(data.code == 200){
+            layer.msg('保存成功');
+            damageList()
+            close();
+          }
+        }
+      })
+    }
+    // 车站输入框提示
+    function tip(el){
+      if($(el).val().trim().length >= 2){
+        $(el).next('ul').empty()
+        $.ajax({
+          type : 'POST',
+          url : reqDomain + "/container/waybill/station_list",
+          data: {
+            channel: 'web',
+            keywords: $(el).val()
+          },
+          dataType:"json",
+          xhrFields:{
+            withCredentials: true
+          },
+          success:function(data){
+            if(data.code == 200){
+              $(el).next('ul').show();
+              if(data.result == 0){
+                $(el).next('ul').html('<li class="list-group-item">未检索到车站</li>')
+              }else{
+                for(var i=0;i<data.result.length;i++){
+                  $(el).next('ul').append('<li class="list-group-item">'+data.result[i].station+'</li>')
+                  $('.tip li').click(function(){
+                    $(el).val($(this).text())
+                    $(this).parent().hide();
+                  })
+                }                
+              }
+            }
+          }				
+        });
+      }else{
+        $(el).next('ul').hide()
+      }
+    }
+    // 编辑已添加集装箱
+    function editDamageBox(index){
+      $('#box_info dd:eq('+index+')').addClass('disabled');
+      $('#box_info dd:eq('+index+')').find('button:eq(0)').attr('disabled',"disabled");
+      for(var i=0;i<box_info.length;i++){
+        if(box_info[i].box_num == box_info[index].box_num){
+          $('#box_num').val(box_info[i].box_num)
+          $('#abnormal_situation').val(box_info[i].abnormal_situation)
+          box_id = box_info[i].id
+          break;
+        }
+      }
+    }
+    // 删除已添加集装箱
+    function deleteBox(index){
+      layer.confirm('确定要删除该集装箱么？',function(){
+        for(var i=0;i<box_info.length;i++){
+          if(box_info[i].box_num == box_info[index].box_num){
+            box_info.splice(i,1);
+            layer.msg('删除成功');
+            showDamageBoxList()
+            break;
+          }
+        }
+      })
+    }
+    // 修改
+    function changeDamage(){
+      if(tableRow == null){
+        layer.msg('请选择一条记录！')
+        return false
+      }
+      $.ajax({
+        async: false,
+        type: 'post',
+        url: reqDomain + '/container/station/operation_detail',
+        data: {
+          channel: 'web',
+          list_id: list_id
+        },
+        success: function(data){
+          if(data.code == 200){
+            $('.mask').show();
+            $('#handle_station').val(data.result.operation[0].handle_station);
+            $('#operation_time').val(formatTime1(data.result.operation[0].operation_time));
+            box_info = data.result.box
+            img_list = data.result.img
+            showDamageBoxList()
+            showImgList()
+          }
+        }
+      })
+    }
+    // 已添加图片    
+    function showImgList(){
+      $('#img_info dd').remove();
+      if(img_list.length == 0){
+        $('#img_info').append('<dd class="list-group-item"><img src="../img/null_img.png" /></dd>')
+      }else{
+        for(var i=0;i<img_list.length;i++){
+          $('#img_info').append('<dd class="list-group-item"><span>&times;</span><img src="'+reqDomain+img_list[i].img_path+'" id="'+img_list[i].img_id+'" onclick="openImg(this)" /></dd>')
+        }
+      }    
+      $('#img_info span').click(function(){
+        var deleteId = $(this).next('img').attr('id')
+        layer.confirm('确定要删除该图片么？',function(){
+          for(var i=0;i<img_list.length;i++){
+            if(img_list[i].img_id == deleteId){
+              $.ajax({
+                type: 'POST',
+                url: reqDomain + "/container/station/operation_attachment_delete",
+                dataType: 'json',
+                data: {
+                  channel: 'web',
+                  img_id: deleteId
+                },
+                success: function(data){
+                  if(data.code == 200){
+                    layer.msg('删除成功', {icon: 1});
+                    // 重新获取详细信息
+                    // changeOperation();
+                  }
+                }
+              })
+            }
+          }
+        })
+      })  
+    }
+    // 删除操作
+    function deleteDamage(){
+      if(tableRow == null){
+        layer.msg('请选择一条记录！')
+        return false
+      }
+      layer.confirm('确定要删除此条记录么？',function(){
+        $.ajax({
+          type: 'post',
+          url: reqDomain + '/container/station/operation_delete',
+          dataType: 'json',
+          data: {
+            channel: 'web',
+            'list_id': list_id
+          },
+          success: function(data){
+            if(data.code == 200){
+              layer.msg('删除成功！');
+              damageList();
+            }
+          }
+        })
+      })
+    }
+    // 关闭弹框
+    $('.close').click(function(){
+      close()
+    })
+    function close(){
+      $('.mask').fadeOut(300)
+    }    
+  </script>
+</body>
+</html>

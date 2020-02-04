@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="shortcut icon" href="../img/icon/lenglian.ico">
+  <link rel="stylesheet" href="../css/bootstrap.min.css">
+  <link rel="stylesheet" href="../css/bootstrap-table.css">
+  <link rel="stylesheet" href="../font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../publicJS/jquery-2.1.0.js"></script>
+  <script src="../publicJS/bootstrap.min.js"></script>
+  <script src="../publicJS/bootstrap-table.js"></script>
+  <script src="../publicJS/reqDomain.js"></script>
+  <script src="../plugs/layer/layer.js"></script>
+  <script src="../plugs/date/WdatePicker.js"></script>
+  <script src="js/function.js"></script>
+  <script src="js/assembly.js"></script>
+  <style>
+    /* 页面效果 */
+    #main{background: white;}
+    .indexTable{position: relative;margin-top: 20px;}
+    .indexTable table tr.bg td{background-color: #e6e6e6;}
+    /* 弹框效果 */
+    .mask>div{width: 800px;height: 330px;position: absolute;top: 50%;left: 50%;margin: -165px 0 0 -400px;background-color: #fff;overflow: hidden;border: 1px solid #45C5F8;border-radius: 10px;}
+    .mask_table{width: 370px;margin: 35px auto;}
+    .mask_table td{text-align: right;font-size: 14px;}
+    .mask_table td .form-control{border: 1px solid #D9D9D9;padding: 2px 8px;margin: 5px 0 5px 20px;width: 200px;resize: none;}
+    .mask_table td input,.mask_table td select{height: 25px;}
+    
+  </style>
+</head>
+<body>
+  <div id="header"></div>
+  <div id="manageNav"></div>
+  <div id="main">
+    <!-- 面包屑 -->
+    <ol class="breadcrumb">
+      <li><a href="javascript:void(0)">班次</a></li>
+      <li class="active">班次列表</li>
+    </ol>
+     <!-- 操作组 -->
+     <div id="operationGroup">
+      <span class="op_btn" onclick="addClass()">添加</span>
+      <span class="op_btn" onclick="changeClass()">修改</span>
+      <span class="op_btn" onclick="deleteClass()">删除</span>	
+    </div>
+    <!-- 表格 -->
+    <div class="indexTable">
+      <table id="indexTable" data-toggle="table"></table>
+    </div>
+     <!-- 弹框 -->
+     <div class="mask"></div>
+  </div>
+  <script>
+    $(function(){
+      // 页面初始化
+      pageInit();
+      // 初始化头部
+      new Header('#header');
+      // 初始化管理导航
+      new ManageNav('#manageNav');
+      // 获取班次列表
+      classList();
+    })
+  </script>
+  <script>
+    var tableRow = null;
+    // 页面初始化
+    function pageInit(){
+      tableRow = null;
+    }
+    // 班次列表
+    function classList(){
+      $.ajax({
+        type: "POST",
+        url: reqDomain + "/schedule/class_listing",
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function (data) {
+          if(data.code == '200'){
+            $("#indexTable").bootstrapTable('load',data.result)
+          }
+        }
+      });
+    }
+    $("#indexTable").bootstrapTable({
+      sidePagination: "client",
+      height: document.getElementsByTagName('body')[0].scrollHeight-200,
+      toolbar: '#operationGroup',
+      showExport: true,
+      exportDataType: 'all',
+      clickToSelect: true,
+      align:'center',
+      columns: [{
+        title: '序号',
+        formatter: function(value, row, index) {
+          return index + 1;
+        }
+      }, {
+        field: 'name',
+        title: '班次名称'
+      }, {
+        field: 'start_time',
+        title: '开始时间'
+      }, {
+        field: 'end_time',
+        title: '结束时间'
+      }, {
+        field: 'next_day',
+        title: '是否隔天',
+        formatter:function(value){
+          return value==1?'是':'否'
+        }
+      }, {
+        field: 'sequence',
+        title: '排序'
+      }, {
+        field: 'id',
+        title: 'id',
+        visible: false
+      }]
+    });
+    $('#indexTable').on('click-row.bs.table',function(e,row,element){
+      $(element).addClass('bg').siblings().removeClass('bg');
+      tableRow = row;
+    })
+    // 添加班次
+    function addClass(){
+      $('.mask').show();
+      new AddClass();
+    }
+    function AddClass(){
+      this.init();
+    }
+    AddClass.prototype.init = function(){
+      var div = document.createElement('div');
+      var str = '<div class="mask_title">添加班次<span class="close" onclick="closeMask()">×</span></div>';
+      str += '<div class="mask_main"><table class="mask_table"><tr><td>班次名称</td><td><input type="text" class="form-control" id="name"></td></tr>';
+      str += '<tr><td>开始时间</td><td><input type="text" class="form-control Wdate" id="start_time"></td></tr>';
+      str += '<tr><td>结束时间</td><td><input type="text" class="form-control Wdate" id="end_time"></td></tr>';
+      str += '<tr><td>是否隔天</td><td><select class="form-control" id="next_day"><option value="0">否</option><option value="1">是</option></select></tr>';
+      str += '<tr><td>排序</td><td><input type="text" class="form-control" id="sequence"></td></tr></table>';
+      str += '<div class="myform_button"><button type="button" class="btn btn-info" onclick="classAdd()">保存</button> </div></div>';  
+      div.innerHTML = str;
+      document.getElementsByClassName('mask')[0].appendChild(div);    
+      $("#start_time").click(function () {
+        WdatePicker({
+            lang: 'auto',
+            dateFmt: 'HH:mm',
+        })
+      })
+      $("#end_time").click(function () {
+        WdatePicker({
+            lang: 'auto',
+            dateFmt: 'HH:mm',
+        })
+      })
+    }
+    // 班次添加保存
+    function classAdd(){
+      if($('#name').val() == '' || $('#start_time').val() == '' || $('#end_time').val() == ''){
+        layer.alert('班次名称、开始时间、结束时间不能为空！');
+        return false;
+      }
+      $.ajax({
+        type: "POST",
+        url: reqDomain + "/schedule/Class_save",
+        data:{
+          name: $('#name').val(),
+          start_time: $('#start_time').val(),
+          end_time: $('#end_time').val(),
+          next_day: $('#next_day').val(),
+          sequence: $('#sequence').val(),
+        },
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function (data) {
+          if(data.code == '200'){
+            layer.alert('班次添加成功！');
+            closeMask();
+            classList();
+            tableRow = null;
+          }
+        }
+      })
+    }
+    // 修改班次
+    function changeClass(){
+      if(tableRow == null){
+        layer.alert('请选择一个班次！');
+        return false;
+      }
+      $('.mask').show();
+      new ChangeClass();
+    }
+    function ChangeClass(){
+      this.init();
+    }
+    ChangeClass.prototype.init = function(){
+      var div = document.createElement('div');
+      var str = '<div class="mask_title">修改班次<span class="close" onclick="closeMask()">×</span></div>';
+      str += '<div class="mask_main"><table class="mask_table"><tr><td>班次名称</td><td><input type="text" class="form-control" id="name"></td></tr>';
+      str += '<tr><td>开始时间</td><td><input type="text" class="form-control Wdate" id="start_time"></td></tr>';
+      str += '<tr><td>结束时间</td><td><input type="text" class="form-control Wdate" id="end_time"></td></tr>';
+      str += '<tr><td>是否隔天</td><td><select class="form-control" id="next_day"><option value="0">否</option><option value="1">是</option></select></tr>';
+      str += '<tr><td>排序</td><td><input type="text" class="form-control" id="sequence"></td></tr></table>';
+      str += '<div class="myform_button"><button type="button" class="btn btn-info" onclick="classChange()">保存</button> </div></div>';  
+      div.innerHTML = str;
+      document.getElementsByClassName('mask')[0].appendChild(div);    
+      $("#start_time").click(function () {
+        WdatePicker({
+            lang: 'auto',
+            dateFmt: 'HH:mm',
+        })
+      })
+      $("#end_time").click(function () {
+        WdatePicker({
+            lang: 'auto',
+            dateFmt: 'HH:mm',
+        })
+      })
+      $('#name').val(tableRow.name);
+      $('#start_time').val(tableRow.start_time);
+      $('#end_time').val(tableRow.end_time);
+      $('#next_day').val(tableRow.next_day);
+      $('#sequence').val(tableRow.sequence);
+    }
+    // 班次修改保存
+    function classChange(){
+      if($('#name').val() == '' || $('#start_time').val() == '' || $('#end_time').val() == ''){
+        layer.alert('班次名称、开始时间、结束时间不能为空！');
+        return false;
+      }
+      $.ajax({
+        type: "POST",
+        url: reqDomain + "/schedule/Class_save",
+        data:{
+          id: tableRow.id,
+          name: $('#name').val(),
+          start_time: $('#start_time').val(),
+          end_time: $('#end_time').val(),
+          next_day: $('next_day').val(),
+          sequence: $('#sequence').val(),
+        },
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function (data) {
+          if(data.code == '200'){
+            layer.alert('班次修改成功！');
+            closeMask();
+            classList();
+            tableRow = null;
+          }
+        }
+      })
+    }
+    // 删除班次
+    function deleteClass(){
+      if(tableRow == null){
+        layer.alert('请选择一个班次！');
+        return false;
+      }
+      layer.confirm('确定要删除该班次么？',function(){
+        $.ajax({
+          type: "POST",
+          url: reqDomain + "/schedule/Class_delete",
+          data:{
+            id: tableRow.id,
+          },
+          xhrFields: {
+            withCredentials: true
+          },
+          success: function (data) {
+            if(data.code == '200'){
+              layer.alert('班次删除成功！');
+              classList();
+              tableRow = null;
+            }
+          }
+        })
+      })
+    }
+    // 点击叉号
+    function closeMask(){
+      $('.mask').fadeOut(300);
+      $('.mask>div').remove();
+    }
+ </script>
+</body>
+</html> 

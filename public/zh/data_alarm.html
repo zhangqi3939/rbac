@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="shortcut icon" href="../img/icon/lenglian.ico">
+  <link rel="stylesheet" href="../css/bootstrap.min.css">
+  <link rel="stylesheet" href="../css/bootstrap-table.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../publicJS/jquery-2.1.0.js"></script>
+  <script src="../publicJS/bootstrap.min.js"></script>
+  <script src="../publicJS/bootstrap-table.js"></script>
+  <script src="../publicJS/bootstrap-multiselect.min.js"></script>
+  <script src="../publicJS/bootstrap-table-zh-CN.min.js?v=20191213"></script>
+  <script src="../publicJS/tableExport.min.js"></script>
+  <script src="../publicJS/bootstrap-table-export.min.js"></script>
+  <script src="../publicJS/reqDomain.js"></script>
+  <script src="../plugs/date/WdatePicker.js"></script>
+  <script src="../plugs/layer/layer.js"></script>
+  <script src="js/function.js"></script>
+  <script src="js/assembly.js"></script>
+  <style>
+    /* 页面效果 */
+    #main{background: white;}
+    .nav.nav-tabs{margin-top: 10px;}
+    #history_alarm{display: none;}
+    #now_alarm,#history_alarm{position: relative;margin-top: 10px;}
+    #history_alarm .columns.columns-right.btn-group.pull-right{position: absolute;top: 0;right: 0;}
+    #history_alarm .pull-right.search{position: absolute;top: 0;right: 102px;}
+    table tr.bg td{background-color: #BBBBBB;}
+  </style>
+</head>
+<body>
+  <div id="header"></div>
+  <div id="nav"></div>
+  <div id="main">
+    <!-- 面包屑 -->
+    <ol class="breadcrumb">
+      <li><a href="cold.html">首页</a></li>
+      <li><a href="#">记录</a></li>
+      <li class="active">报警数据</li>
+    </ol>
+    <ul class="nav nav-tabs">
+      <li role="presentation" class="active"><a href="javascript:void(0)">当前报警</a></li>
+      <li role="presentation"><a href="javascript:void(0)">历史报警</a></li>
+    </ul>
+    <div id="now_alarm">
+      <table id="nowTable"></table>
+    </div>
+    <div id="history_alarm">
+      <div id="operationGroup">
+        <b>起止时间：</b>
+        <input type="text" id="startTime" class="op_input" onfocus="WdatePicker({ dateFmt:'yyyy-MM-dd HH:mm'})" placeholder="请选择开始时间" autocomplete="off">
+        <b>--</b>
+        <input type="text" id="endTime" class="op_input Wdate" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm',minDate:'#F{$dp.$D(\'startTime\')}'});" placeholder="请选择结束时间" autocomplete="off">
+        <span class="op_btn" onclick="historyAlarm()" style="color:#1199D3;">查询</span>	
+      </div>
+      <table id="historyTable"></table>
+    </div>
+  </div>
+  <script>
+    $(function(){
+    	$('#home').prop('href',window.localStorage.getItem('homePage')+'.html')
+      // 初始化头部
+      new Header('#header');
+      // 初始化导航
+      new Nav('#nav');
+      // 当天报警
+      nowAlarm();
+    })
+  </script>
+  <script>
+    $('.nav.nav-tabs li').click(function(){
+      $(this).addClass('active').siblings().removeClass('active');
+      if($(this).index()==0){
+        $('#now_alarm').show();
+        $('#history_alarm').hide();
+        nowAlarm();
+      }else{
+        $('#now_alarm').hide();
+        $('#history_alarm').show();
+        historyAlarm();
+      }
+    })
+    // 当前报警
+    function nowAlarm(){
+      $.ajax({
+        type: "POST",
+        url: reqDomain + "/alarm/alarm_current",
+        dataType: "json",
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function (data) {
+          if(data.code == '200'){
+            $('#nowTable').bootstrapTable({
+              height: document.getElementsByTagName('body')[0].scrollHeight-200,
+              pagination: true, //是否显示分页（*）
+              sortable: true, //是否启用排序
+              sidePagination: "client", //分页方式：client客户端分页，server服务端分页（*）
+              pageNumber:1, //初始化加载第一页，默认第一页
+              pageSize: 20, //每页的记录行数（*）
+              pageList: [10, 20, 50, 100], //可供选择的每页的行数（*）
+              strictSearch: false,
+              search: true,
+              showExport: true,
+              exportDataType:'all',
+              showColumns:true,
+              columns:[
+                {field:'name',title:'箱号',width:'30%'},
+                {field:'box_id',title:'dtu编号',width:'20%'},
+                {field:'alarm_type',title:'报警类型',width:'30%',formatter:function(value,row){
+                  return alarmType(row.device_code,value);
+                }},
+                {field:'start_time',title:'报警发生时间',width:180,formatter:function(value){return formatTime(value);}},
+                {field:'end_time',title:'报警结束时间',width:180,formatter:function(value){return formatTime(value);}}
+              ]
+            });
+            $("#nowTable").bootstrapTable('load',data.result);
+          }
+        }
+      });
+    }
+    // 历史报警
+    function historyAlarm(){
+      $.ajax({
+        type: "POST",
+        url: reqDomain + "/alarm/alarm_history",
+        dataType: "json",
+        data: {
+          startTime:$("#startTime").val(),
+          endTime:$("#endTime").val()
+        },
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function (data) {
+          if(data.code == '200'){
+            $('#historyTable').bootstrapTable({
+              height: document.getElementsByTagName('body')[0].scrollHeight-240,
+              pagination: true, //是否显示分页（*）
+              sortable: true, //是否启用排序
+              sidePagination: "client", //分页方式：client客户端分页，server服务端分页（*）
+              pageNumber:1, //初始化加载第一页，默认第一页
+              pageSize: 10, //每页的记录行数（*）
+              strictSearch: false,
+              search: true,
+              showExport: true,
+              exportDataType:'all',
+              showColumns:true,
+              columns:[
+                {field:'name',title:'箱号'},
+                {field:'box_id',title:'dtu编号'},
+                {field:'alarm_type',title:'报警类型',formatter:function(value,row){
+                  return alarmType(row.device_code,value);
+                }},
+                {field:'start_time',title:'开始时间',width:180,formatter:function(value){return formatTime(value);}},
+                {field:'end_time',title:'结束时间',width:180,formatter:function(value){return formatTime(value);}}
+              ]
+            });
+            $("#historyTable").bootstrapTable('load',data.result);
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>

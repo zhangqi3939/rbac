@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="shortcut icon" href="../img/icon/lenglian.ico">
+  <link rel="stylesheet" href="../css/bootstrap.min.css?v=20191213">
+  <link rel="stylesheet" href="../css/bootstrap-table.css?v=20191213">
+  <link rel="stylesheet" href="../css/bootstrap-multiselect.min.css?v=20191213">
+  <link rel="stylesheet" href="../font-awesome/css/font-awesome.min.css?v=20191213">
+  <link rel="stylesheet" href="../css/style.css?v=20191213">
+  <script src="../publicJS/jquery-2.1.0.js?v=20191213"></script>
+  <script src="../publicJS/bootstrap.min.js?v=20191213"></script>
+  <script src="../publicJS/bootstrap-table.js?v=20191213"></script>
+  <script src="../publicJS/bootstrap-table-zh-CN.min.js?v=20191213"></script>
+  <script src="../publicJS/tableExport.min.js?v=20191213"></script>
+  <script src="../publicJS/bootstrap-table-export.min.js?v=20191213"></script>
+  <script src="../publicJS/reqDomain.js?v=20191213"></script>
+  <script src="../plugs/layer/layer.js?v=20191213"></script>
+  <script src="js/function.js?v=20191213"></script>
+  <script src="js/assembly.js?v=20191213"></script>
+  <style>
+    /* 页面效果 */
+    #main{background: white;}
+    .indexTable{position: relative;margin-top: 20px;width: 60%;float: left;}
+    .secondTable{position: relative;margin-top: 20px;width: 38%;margin-left: 1%;float: left;}
+    .indexTable table tr.bg td{background-color: #e6e6e6;}
+    .secondTable table tr.bg td{background-color: #e6e6e6;}
+    /* 弹框效果 */
+    .mask>div{width: 800px;height: 300px;position: absolute;top: 50%;left: 50%;margin: -150px 0 0 -400px;background-color: #fff;overflow: auto;border: 1px solid #45C5F8;border-radius: 10px;}
+    .mask_table{width: 370px;margin: 20px 35px;float: left;}
+    .mask_table td{text-align: right;font-size: 14px;}
+    .mask_table td .form-control{border: 1px solid #D9D9D9;padding: 2px 8px;margin: 5px 0 5px 20px;width: 200px;resize: none;}
+    .mask_table td input,.mask_table td select{height: 25px;}
+    .power{float: left;width: 357px;height: 180px;margin: 10px auto;
+    border-left: 1px solid #dddddd;}
+    .power h3{font-size: 16px;text-align: center;margin: 0;}
+    .powerList{width: 250px;background-color: #45C5F8;margin: 10px auto;height: 166px;overflow-y: auto;}
+    .powerList li{padding: 5px 7px;}
+    .powerList li label{font-weight: normal;margin: 0;}
+    .powerList li input{margin-right: 5px;}
+    .myform_button{clear: both;}
+    #roleDeviceCategory{padding-left: 20px;}
+    #roleDeviceCategory label{margin-bottom: 0;float: left;margin-right: 10px;}
+    #roleDeviceCategory label input{margin-bottom: 0;float: left;margin-right: 5px;}
+    #roleDeviceCategory label>*{float: left;line-height: 30px;}
+  </style>
+</head>
+<body>
+  <div id="header"></div>
+  <div id="manageNav"></div>
+  <div id="main">
+    <!-- 面包屑 -->
+    <ol class="breadcrumb">
+      <li><a href="#">角色</a></li>
+      <li class="active">角色列表</li>
+    </ol>
+     <!-- 操作组 -->
+     <div id="operationGroup">
+      <span class="op_btn" onclick="addRole()">添加</span>
+      <span class="op_btn" onclick="changeRole()">修改</span>
+      <span class="op_btn" onclick="deleteRole()">删除</span>	
+    </div>
+    <!-- 表格 -->
+    <div class="indexTable">
+      <table id="indexTable" data-toggle="table"></table>
+    </div>
+    <!-- 角色用户列表 -->
+    <div class="secondTable">
+      <table id="secondTable" data-toggle="table"></table>
+    </div>
+     <!-- 弹框 -->
+     <div class="mask"></div>
+  </div>
+  <script>
+    $(function(){
+      // 页面初始化
+      pageInit();
+      // 初始化头部
+      new Header('#header');
+      // 初始化管理导航
+      new ManageNav('#manageNav');
+      // 获取产品类型列表
+      getDeviceList();
+      // 获取角色列表
+      // roleList();
+      // 权限列表
+      getLimitList()
+    })
+  </script>
+  <script>
+    var tableRow = null;
+    var deviceList = {};
+    var limitList = [];
+    // 页面初始化
+    function pageInit(){
+      tableRow = null;
+      deviceList = {};
+      limitList = [];
+    }
+    // 获取权限列表
+    function getLimitList(){
+      $.ajax({
+        async: false,
+        type: 'post',
+        url: reqDomain + '/dept/limit_list',
+        dataType: 'json',
+        success: function(data){
+          if(data.code == 200){
+            limitList = data.result
+          }
+        }
+      })
+    }
+    // 获取产品类型列表
+    function getDeviceList(){
+      $.ajax({
+        type: "POST",
+        url: reqDomain + "/device/device_category",
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function (data) {
+          if(data.code == '200'){
+            deviceList = data.result;
+            roleList();
+          }
+        }
+      });
+    }
+    // 角色列表
+    function roleList(){
+      $.ajax({
+        type: "POST",
+        url: reqDomain + "/dept/role_list",
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function (data) {
+          if(data.code == '200'){
+            $("#indexTable").bootstrapTable('load',data.result)
+          }
+        }
+      });
+    }
+    $("#indexTable").bootstrapTable({
+      sidePagination: "client",
+      showExport: true,
+      exportDataType: 'all',
+      clickToSelect: true,
+      toolbar: '#operationGroup',
+      pagination: true,
+      search: true,
+	    searchTimeOut: 700,
+      paginationLoop: true,
+      pageNumber: 1,
+      pageSize: 15,
+      height: document.getElementsByTagName('body')[0].scrollHeight-200,
+      columns: [{
+        title: '序号',
+        formatter: function(value, row, index) {
+          return index + 1;
+        }
+      },{
+        field: 'id',
+        title: '角色ID',
+        visible: false
+      }, {
+        field: 'role_name',
+        title: '角色名称'
+      }, {
+        field: 'role_in_option',
+        title: '是否操作机组',
+        formatter: function(value){
+          if(value == 1){
+            return '是'
+          }else if(value == 0){
+            return '否'
+          }else{
+            return '-'
+          }          
+        }
+      }, {
+        field: 'role_in_schedule',
+        title: '是否参与排班',
+        formatter: function(value){
+          if(value == 1){
+            return '是'
+          }else if(value == 0){
+            return '否'
+          }else{
+            return '-'
+          } 
+        }
+      }, {
+        field: 'role_description',
+        title: '角色说明'
+      }, {
+        field: 'role_device_category',
+        title: '角色可看设备类型',
+        formatter: function(value){
+          if(value == undefined || value == null){
+            return '-'
+          }
+          var str = '';
+          if(value.split(',').slice(-1) == ['']){
+            var iMax = value.split(',').length-1
+          }else{
+            var iMax = value.split(',').length
+          }
+          for(var i=0;i<iMax;i++){
+            if(deviceList[value.split(',')[i]] != undefined){
+              str += deviceList[value.split(',')[i]] + ' '
+            }else{
+              str += '';
+            }
+          }
+          return str
+        }
+      }]
+    });
+    $("#secondTable").bootstrapTable({
+      sidePagination: "client",
+      showExport: true,
+      exportDataType: 'all',
+      height: document.getElementsByTagName('body')[0].scrollHeight-200,
+      columns: [{
+        title: '序号',
+        formatter: function(value, row, index) {
+          return index + 1;
+        }
+      },{
+        field: 'id',
+        title: 'ID',
+        visible: false
+      }, {
+        field: 'user_name',
+        title: '用户名称'
+      }, {
+        field: 'user_id',
+        title: '用户ID',
+        visible: false
+      }]
+    });
+    $('#indexTable').on('click-row.bs.table',function(e,row,element){
+      $(element).addClass('bg').siblings().removeClass('bg');
+      tableRow = row;
+      getRoleUserList(tableRow.id)
+    })
+    // 获取角色下用户列表
+    function getRoleUserList(id){
+      $.ajax({
+        type: "POST",
+        url: reqDomain + "/dept/role_user",
+        dataType: 'json',
+        data:{
+          roleID: id
+        },
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function (data) {
+          if(data.code == '200'){
+            $("#secondTable").bootstrapTable('load', data.result)
+          }
+        }
+      })
+    }
+    // 添加角色
+    function addRole(){
+      $('.mask').show();
+      new AddRole();
+    }
+    function AddRole(){
+      this.init();
+    }
+    AddRole.prototype.init = function(){
+      var div = document.createElement('div');
+      var str = '<div class="mask_title">添加角色<span class="close" onclick="closeMask()">×</span></div>';
+      str += '<div class="mask_main"><table class="mask_table"><tr><td>角色名称</td><td><input type="text" class="form-control" id="roleName"></td></tr>';
+      str += '<tr><td>可否操作主机</td><td><select class="form-control" id="roleCoolerOption"><option value="0">否</option><option value="1">是</option></select></td></tr>';
+      str += '<tr><td>是否参与排班</td><td><select class="form-control" id="roleInSchedule"><option value="0">否</option><option value="1">是</option></select></td></tr>';
+      str += '<tr><td>角色可看产品类型列表</td><td id="roleDeviceCategory">';
+        for(var key in deviceList){
+          str += '<label><input type="checkbox" value="'+key+'"/><span>'+deviceList[key]+'</span></label>';
+        }
+        str += '</td></tr>';
+      str += '<tr><td>角色说明</td><td><textarea class="form-control" id="roleDescription"></textarea></td></tr></table>';
+      str += '<div class="power">'
+      str += "<h3>用户权限</h3>";
+      str += "<ul class='powerList list-group'>";
+      if(limitList.length != 0){
+        for(var i=0;i<limitList.length;i++){
+          str += '<li class="list-group-item"><label><input type="checkbox" id="'+limitList[i].id+'">'+limitList[i].limit_name+'</label></li>';
+        }
+      }
+      str += "</ul>";
+      str += '</div>'
+      str += '<div class="myform_button"><button type="button" class="btn btn-info" onclick="roleAdd()">保存</button></div></div>';  
+      div.innerHTML = str;
+      document.getElementsByClassName('mask')[0].appendChild(div);    
+    }
+    // 角色添加保存
+    function roleAdd(){
+      if($('#roleName').val() == '' || $('#roleDescription').val() == ''){
+        layer.alert('角色名称和角色说明不能为空！');
+        return false;
+      }
+      var roleDeviceCategory = [];
+      $('#roleDeviceCategory input').each(function(i,v){
+        if($(this).prop('checked') == true){
+          roleDeviceCategory.push($(this).val())
+        }
+      })
+      var role_in_limit = '';
+      $('.powerList input').each(function(){
+        if($(this).prop('checked') == true){
+          role_in_limit += $(this).attr('id') + ','
+        }
+      })
+      $.ajax({
+        type: "POST",
+        url: reqDomain + "/dept/role_save",
+        data:{
+          role_in_schedule: $('#roleInSchedule').val(),
+          role_in_option: $('#roleCoolerOption').val(),
+          role_in_limit: role_in_limit,
+          role_name: $('#roleName').val(),
+          role_description: $('#roleDescription').val(),
+          role_device_category: roleDeviceCategory
+        },
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function (data) {
+          if(data.code == '200'){
+            layer.alert('角色添加成功！');
+            closeMask();
+            roleList();
+            tableRow = null;
+          }
+        }
+      })
+    }
+    // 修改用户
+    function changeRole(){
+      if(tableRow == null){
+        layer.alert('请选择一个角色！');
+        return false;
+      }
+      $('.mask').show();
+      new ChangeRole();
+    }
+    function ChangeRole(){
+      this.init();
+    }
+    ChangeRole.prototype.init = function(){
+      var div = document.createElement('div');
+      var str = '<div class="mask_title">添加角色<span class="close" onclick="closeMask()">×</span></div>';
+      str += '<div class="mask_main"><table class="mask_table"><tr><td>角色名称</td><td><input type="text" class="form-control" id="roleName"></td></tr>';
+      str += '<tr><td>可否操作主机</td><td><select class="form-control" id="roleCoolerOption"><option value="0">否</option><option value="1">是</option></select></td></tr>';
+      str += '<tr><td>是否参与排班</td><td><select class="form-control" id="roleInSchedule"><option value="0">否</option><option value="1">是</option></select></td></tr>';
+      str += '<tr><td>角色可看产品类型列表</td><td id="roleDeviceCategory">';
+      for(var key in deviceList){
+        str += '<label><input type="checkbox" value="'+key+'"/><span>'+deviceList[key]+'</span></label>';
+      }
+      str += '</td></tr>';
+      str += '<tr><td>角色说明</td><td><textarea class="form-control" id="roleDescription"></textarea></td></tr></table>';
+      str += '<div class="power">'
+      str += "<h3>用户权限</h3>";
+      str += "<ul class='powerList list-group'>";
+      if(limitList.length != 0){
+        for(var i=0;i<limitList.length;i++){
+          str += '<li class="list-group-item"><label><input type="checkbox" id="'+limitList[i].id+'">'+limitList[i].limit_name+'</label></li>';
+        }
+      }
+      str += "</ul>";
+      str += '</div>'
+      str += '<div class="myform_button"><button type="button" class="btn btn-info" onclick="userChange()">保存</button></div>';  
+      div.innerHTML = str;
+      document.getElementsByClassName('mask')[0].appendChild(div);
+      $('#roleName').val(tableRow.role_name);
+      $('#roleCoolerOption').val(tableRow.role_in_option);
+      $('#roleInSchedule').val(tableRow.role_in_schedule);
+      $('#roleDescription').val(tableRow.role_description);
+      // 可看设备类型
+      if(tableRow.role_device_category.split(',').slice(-1) == ['']){
+        var iMax = tableRow.role_device_category.split(',').length-1
+      }else{
+        var iMax = tableRow.role_device_category.split(',').length
+      }
+      for(var i=0;i<iMax;i++){
+        $('#roleDeviceCategory input').each(function(){
+          if($(this).val() == tableRow.role_device_category.split(',')[i]){
+            $(this).prop('checked','checked')
+          }
+        })
+      }
+      // 权限
+      if(tableRow.role_in_limit.split(',').slice(-1) == ['']){
+        var iMax = tableRow.role_in_limit.split(',').length-1
+      }else{
+        var iMax = tableRow.role_in_limit.split(',').length
+      }
+      for(var i=0;i<iMax;i++){
+        $('.powerList input').each(function(){
+          if($(this).attr('id') == tableRow.role_in_limit.split(',')[i]){
+            $(this).prop('checked','checked')
+          }
+        })
+      }
+    }
+    // 角色修改保存
+    function userChange(){
+      if($('#userName').val() == '' || $('#realName').val() == ''){
+        layer.alert('登录名和姓名不能为空！');
+        return false;
+      }
+      var roleDeviceCategory = [];
+      $('#roleDeviceCategory input').each(function(i,v){
+        if($(this).prop('checked') == true){
+          roleDeviceCategory.push($(this).val())
+        }
+      })
+      var role_in_limit = '';
+      $('.powerList input').each(function(){
+        if($(this).prop('checked') == true){
+          role_in_limit += $(this).attr('id') + ','
+        }
+      })
+      $.ajax({
+        type: "POST",
+        url: reqDomain + "/dept/role_save",
+        data:{
+          role_id: tableRow.id,
+          role_name: $('#roleName').val(),
+          role_in_limit: role_in_limit,
+          role_in_schedule: $('#roleInSchedule').val(),
+          role_in_option: $('#roleCoolerOption').val(),
+          role_description: $('#roleDescription').val(),
+          role_device_category: roleDeviceCategory
+        },
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function (data) {
+          if(data.code == '200'){
+            layer.alert('用户修改成功！');
+            closeMask();
+            roleList();
+            tableRow = null;
+          }
+        }
+      })
+    }
+    // 删除角色
+    function deleteRole(){
+      if(tableRow == null){
+        layer.alert('请选择一个角色！');
+        return false;
+      }
+      layer.confirm('确定要删除该角色么？',function(){
+        $.ajax({
+          type: "POST",
+          url: reqDomain + "/dept/role_delete",
+          data:{
+            role_id: tableRow.id,
+          },
+          xhrFields: {
+            withCredentials: true
+          },
+          success: function (data) {
+            if(data.code == '200'){
+              layer.alert('角色删除成功！');
+              roleList();
+              tableRow = null;
+            }
+          }
+        })
+      })
+    }
+    // 点击叉号
+    function closeMask(){
+      $('.mask').fadeOut(300);
+      $('.mask>div').remove();
+    }
+ </script>
+</body>
+</html> 

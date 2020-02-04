@@ -1,0 +1,1876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="shortcut icon" href="../img/icon/lenglian.ico">
+  <link rel="shortcut icon" href="../img/icon/lenglian.ico">
+  <link rel="stylesheet" href="../css/bootstrap.min.css?v=20191213">
+  <link rel="stylesheet" href="../css/bootstrap-table.css?v=20191213">
+  <link rel="stylesheet" href="../css/bootstrap-multiselect.min.css?v=20191213">
+  <link rel="stylesheet" href="../css/style.css?v=20191213">
+  <script src="../publicJS/jquery-2.1.0.js?v=20191213"></script>
+  <script src="../publicJS/bootstrap.min.js?v=20191213"></script>
+  <script src="../publicJS/bootstrap-table.js?v=20191213"></script>
+  <script src="../publicJS/bootstrap-table-zh-CN.min.js?v=20191213"></script>
+  <script src="../publicJS/tableExport.min.js?v=20191213"></script>
+  <script src="../publicJS/bootstrap-table-export.min.js?v=20191213"></script>
+  <script src="../publicJS/bootstrap-multiselect.min.js?v=20191213"></script>
+  <script src="../publicJS/reqDomain.js?v=20191213"></script>
+  <script src="../plugs/layer/layer.js?v=20191213"></script>
+  <script src="../plugs/date/WdatePicker.js?v=20191213"></script>
+  <script src="js/function.js?v=20191213"></script>
+  <script src="js/assembly.js?v=20191213"></script>
+  <style>
+    /* 页面效果 */
+    #main{background: white;}
+    #list_type+div{float: left;}
+    .opGroup{margin-bottom: 10px;}
+    .indexTable table tr.bg td{background-color: #e6e6e6;}
+    .mask{display: block;}
+    /* 弹框 */
+    .mask>div{width: 650px;position: absolute;top: 50%;left: 50%;background-color: white;border: 1px solid #45C5F8;border-radius: 10px;}
+    .mask .addMoveInside{height: 480px;margin: -240px 0 0 -325px;}
+    .mask .addDeliver{height: 600px;margin: -300px 0 0 -325px;}
+    .addDeliver .operationItem{height: 500px;}
+    .mask .addCharge{height: 480px;margin: -240px 0 0 -325px;}
+    .addCharge .operationItem{height: 380px;}
+    .mask .addOil{height: 480px;margin: -240px 0 0 -325px;}
+    .addOil .operationItem{height: 380px;}
+    .mask .addWash{height: 600px;margin: -300px 0 0 -325px;}
+    .addWash .operationItem{height: 500px;}
+    .mask_main{padding: 10px 0;}
+    .operationItem{width: 50%;float: left;border-left: 1px solid #aaa;padding: 10px 20px;}
+    .mask_main .operationItem:first-child{border: none;}
+    .operationItemTitle{text-align: center;font-weight: bold;font-size: 16px;margin: 0 0 10px 0;}
+    .mask_main form .form-group{margin: 5px 0;position: relative;}
+    .mask_main form .form-group>label{width: 78px;text-align: right;color: #333;font-weight: normal;font-size: 12px;}
+    .mask_main form .form-group>label.required::after{display: block;content: '*';color: red;position: absolute;left: 0;top: 5px;}
+    .mask_main form .form-group .form-control{width: 200px;height: 26px;font-size: 12px;padding: 4px 12px;}
+    /* 车站提示 */
+    .tip{position: absolute;left: 82px;width: 200px;height: 166px;overflow: auto;display: none;z-index: 100;}
+    .tip li{font-size: 12px;padding: 4px 12px;height: 26px;}
+    .tip li:hover{background-color: #e6e6e6;cursor: pointer}
+    /* 已添加集装箱列表  */
+    #box_info dt{margin: 10px 0;}
+    #box_info dd{position: relative;height: 26px;padding: 4px 12px;font-size: 12px;cursor: pointer;}
+    #box_info dd.disabled::after{content: '';position: absolute;top: 0;left: 0;z-index: 100;width: 100;height: 100%;background: rgba(0,0,0,0.4);}
+    .box_op{float: right;}
+    .box_op button{margin-left: 5px;background: none;outline: none;border: none;}
+    .box_detail{width: 250px;position: absolute;bottom: 24px;background-color: white;border-radius: 4px;border: 1px solid #ddd;margin: 0;}
+    .box_detail li{font-size: 12px;color: #333;height: 26px;padding: 4px 12px;}
+    .box_detail li span{float: right;}
+    .box_detail li span:first-child{float: left;}
+    #add_box{display: block;margin: 10px auto;}
+    /* 已添加图片 */
+    #img_info dt{margin: 10px 0;}
+    #img_info dd{display: inline-block;width: 60px;height: 60px;margin: 8px 8px 0 0;position: relative;padding: 0;}
+    #img_info dd span{position: absolute;top: -8px;right: -8px;width: 16px;height: 16px;font-size: 16px;color: white;border-radius: 50%;background-color: #969799;line-height: 16px;text-align: center;cursor: pointer;}
+    #img_info dd span:hover{background-color: #d9534f;}
+    #img_info dd img{width: 100%;height: 100%;cursor: pointer;}
+    /* 添加预览 */
+    #img_list::after{content: '';display: block;clear: both;}
+    #img_list li{float: left;width: 60px;height: 60px;margin: 8px 8px 0 0;position: relative;}
+    #img_list li span{position: absolute;top: -8px;right: -8px;width: 16px;height: 16px;font-size: 16px;color: white;border-radius: 50%;background-color: #969799;line-height: 16px;text-align: center;cursor: pointer;}
+    #img_list li span:hover{background-color: #d9534f;}
+    #img_list li img{width: 100%;height: 100%;cursor: pointer;}
+    .myform_button{padding-top: 15px;}
+  </style>
+</head>
+<body>
+  <div id="header"></div>
+  <div id="nav"></div>
+  <div id="main">
+    <!-- 面包屑 -->
+    <ol class="breadcrumb">
+      <li><a href="cold.html">首页</a></li>
+      <li><a href="#">箱管</a></li>
+      <li class="active">货场操作</li>
+    </ol>
+    <!-- 操作组 -->
+    <div class="opGroup">
+      <select id="list_type" multiple>
+        <option value="1">场内搬移</option>
+        <option value="2">站外配送</option>
+        <option value="3">充电作业</option>
+        <option value="4">加油作业</option>
+        <option value="5">洗箱作业</option>
+      </select>
+      <b>操作起止时间：</b>
+      <input type="text" id="start_time" class="op_input" onfocus="WdatePicker({ dateFmt:'yyyy-MM-dd HH:mm:ss'})" placeholder="请选择开始时间" autocomplete="off">
+      <b>--</b>
+      <input type="text" id="end_time" class="op_input Wdate" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss',minDate:'#F{$dp.$D(\'start_time\')}'});" placeholder="请选择结束时间" autocomplete="off">
+      <input type="text" id="keywords" class="op_input" placeholder="办理站">
+      <span class="op_btn" onclick="operationList()" style="color:#1199D3;">查询</span>	
+    </div>
+    <div id="operationGroup">
+      <div class="dropdown" style="float: left;margin-right: 20px;">
+        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+          添加
+          <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" id="addOperation"
+        aria-labelledby="dropdownMenu1">
+          <li><a href="javascript:void(0)">场内搬移</a></li>
+          <li><a href="javascript:void(0)">站外配送</a></li>
+          <li><a href="javascript:void(0)">充电作业</a></li>
+          <li><a href="javascript:void(0)">加油作业</a></li>
+          <li><a href="javascript:void(0)">洗箱作业</a></li>
+        </ul>
+      </div>
+      <span class="op_btn" onclick="changeOperation()">修改</span>
+      <span class="op_btn" onclick="deleteOperation()">删除</span> 
+    </div>
+    <!-- 表格 -->
+    <div class="indexTable">
+      <table id="indexTable" data-toggle="table"></table>
+    </div>
+    <!-- 弹框 -->
+    <!-- 场内搬移 -->
+    <!-- <div class="mask moveInsideMask">
+      <div class="addMoveInside">
+        <div class="mask_title">
+          添加场内搬移<span class="close">×</span>
+        </div>
+        <div class="mask_main">
+          <div class="operationItem">
+            <div class="operationItemTitle">
+              操作信息
+            </div>
+            <form class="form-inline">
+              '<div class="form-group">'
+                <label for="handle_station" class="required">办理站：</label>
+                <input type="text" class="form-control station" id="handle_station" placeholder="输入站名或拼音首字母" onkeyup="tip(this)">
+                <ul class="list-group tip"></ul>
+              </div>
+              <div class="form-group">
+                <label for="operation_time" class="required">搬移时间：</label>
+                <input type="text" class="form-control" id="operation_time" onfocus="WdatePicker({ dateFmt:'yyyy-MM-dd HH:mm:ss'})" placeholder="请选择搬移时间" autocomplete="off">
+              </div>
+            </form>
+            <dl class="list-group" id="box_info">
+              <dt>已添加集装箱:</dt>
+              <dd class="list-group-item"></dd>
+            </dl>
+          </div>
+          <div class="operationItem">
+            <div class="operationItemTitle">
+              添加集装箱
+            </div>
+            <form class="form-inline">
+              <div class="form-group">
+                <label for="box_num" class="required">集装箱箱号：</label>
+                <input type="text" class="form-control" id="box_num"  autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label for="original_position">原位置：</label>
+                <input type="text" class="form-control" id="original_position"  autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label for="move_position">搬移位置：</label>
+                <input type="text" class="form-control" id="move_position"  autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label for="move_reason">搬移原因：</label>
+                <input type="text" class="form-control" id="move_reason"  autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label for="set_temp">设置温度：</label>
+                <input type="text" class="form-control" id="set_temp"  autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label for="open_temp">开机温度：</label>
+                <input type="text" class="form-control" id="open_temp"  autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label for="box_type">箱型：</label>
+                <div style="display:inline-block" id="box_type">
+                  <div class="radio">
+                    <label>
+                      <input type="radio" value="0" name="box_type">
+                      重箱
+                    </label>
+                  </div>
+                  <div class="radio">
+                    <label>
+                      <input type="radio" value="1" name="box_type">
+                      空箱
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="box_status">箱状：</label>
+                <div style="display:inline-block" id="box_status">
+                  <div class="radio">
+                    <label>
+                      <input type="radio" value="0" name="box_status">
+                      正常
+                    </label>
+                  </div>
+                  <div class="radio">
+                    <label>
+                      <input type="radio" value="1" name="box_status">
+                      异常
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <button type="button" class="btn btn-default btn-sm" id="add_box" onclick="addMoveInsideBox()">保存集装箱</button>
+            </form>
+          </div>
+          <div class="myform_button">
+            <button type="button" class="btn btn-info" onclick="saveMoveInside()">保存操作</button>
+          </div>
+        </div>
+      </div>
+    </div> -->
+    <!-- 站外配送 -->
+    <!-- <div class="mask deliverMask">
+      <div class="addDeliver">
+        <div class="mask_title">
+          添加站外配送<span class="close">×</span>
+        </div>
+        <div class="mask_main">
+          <div class="operationItem">
+            <div class="operationItemTitle">
+              操作信息
+            </div>
+            <form class="form-inline">
+              <div class="form-group">
+                <label for="handle_station" class="required">办理站：</label>
+                <input type="text" class="form-control station" id="handle_station" placeholder="输入站名或拼音首字母" onkeyup="tip(this)">
+                <ul class="list-group tip"></ul>
+              </div>
+              <div class="form-group">
+                <label for="operation_time" class="required">交接时间：</label>
+                <input type="text" class="form-control" id="operation_time" onfocus="WdatePicker({ dateFmt:'yyyy-MM-dd HH:mm:ss'})" placeholder="请选择交接时间" autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label for="delivery_company">交付单位：</label>
+                <input type="text" class="form-control" id="delivery_company">
+              </div>
+              <div class="form-group">
+                <label for="accept_company">接收单位：</label>
+                <input type="text" class="form-control" id="accept_company">
+              </div>
+              <div class="form-group">
+                <label for="departure_time">出站时间：</label>
+                <input type="text" class="form-control" id="departure_time" onfocus="WdatePicker({ dateFmt:'yyyy-MM-dd HH:mm:ss'})" placeholder="请选择出站时间" autocomplete="off">
+              </div>
+            </form>
+            <dl class="list-group" id="box_info">
+              <dt>已添加集装箱:</dt>
+              <dd class="list-group-item"></dd>
+            </dl>
+          </div>
+          <div class="operationItem">
+            <div class="operationItemTitle">
+              添加集装箱
+            </div>
+            <form class="form-inline">
+              <div class="form-group">
+                <label for="box_num" class="required">集装箱箱号：</label>
+                <input type="text" class="form-control" id="box_num"  autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label for="move_car_num">搬出汽车号：</label>
+                <input type="text" class="form-control" id="move_car_num"  autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label for="outgoing_temp">出站温度：</label>
+                <input type="text" class="form-control" id="outgoing_temp"  autocomplete="off">
+              </div>
+              <button type="button" class="btn btn-default btn-sm" id="add_box" onclick="addDeliverBox()">保存集装箱</button>
+            </form>
+          </div>
+          <div class="myform_button">
+            <button type="button" class="btn btn-info" onclick="saveDeliver()">保存操作</button>
+          </div>
+        </div>
+      </div>
+    </div> -->
+    <!-- 充电作业 -->
+    <!-- <div class="mask chargeMask">
+      <div class="addCharge">
+        <div class="mask_title">
+          添加充电作业<span class="close">×</span>
+        </div>
+        <div class="mask_main">
+          <div class="operationItem">
+            <div class="operationItemTitle">
+              操作信息
+            </div>
+            <form class="form-inline">
+              <div class="form-group">
+                <label for="handle_station" class="required">办理站：</label>
+                <input type="text" class="form-control station" id="handle_station" placeholder="输入站名或拼音首字母" onkeyup="tip(this)">
+                <ul class="list-group tip"></ul>
+              </div>
+              <div class="form-group">
+                <label for="operation_time" class="required">充电时间：</label>
+                <input type="text" class="form-control" id="operation_time" onfocus="WdatePicker({ dateFmt:'yyyy-MM-dd HH:mm:ss'})" placeholder="请选择充电时间" autocomplete="off">
+              </div>
+            </form>
+            <dl class="list-group" id="box_info">
+              <dt>已添加集装箱:</dt>
+              <dd class="list-group-item"></dd>
+            </dl>
+          </div>
+          <div class="operationItem">
+            <div class="operationItemTitle">
+              添加集装箱
+            </div>
+            <form class="form-inline">
+              <div class="form-group">
+                <label for="box_num" class="required">充电箱号：</label>
+                <input type="text" class="form-control" id="box_num"  autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label for="set_temp">设定温度：</label>
+                <input type="text" class="form-control" id="set_temp"  autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label for="charging_time">充电时长：</label>
+                <input type="text" class="form-control" id="charging_time"  autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label for="abnormal_situation">异常情况：</label>
+                <input type="text" class="form-control" id="abnormal_situation"  autocomplete="off">
+              </div>
+              <button type="button" class="btn btn-default btn-sm" id="add_box" onclick="addChargeBox()">保存集装箱</button>
+            </form>
+          </div>
+          <div class="myform_button">
+            <button type="button" class="btn btn-info" onclick="saveCharge()">保存操作</button>
+          </div>
+        </div>
+      </div>
+    </div> -->
+    <!-- 加油作业 -->
+    <!-- <div class="mask oilMask">
+      <div class="addOil">
+        <div class="mask_title">
+          添加加油作业<span class="close">×</span>
+        </div>
+        <div class="mask_main">
+          <div class="operationItem">
+            <div class="operationItemTitle">
+              操作信息
+            </div>
+            <form class="form-inline">
+              <div class="form-group">
+                <label for="handle_station" class="required">办理站：</label>
+                <input type="text" class="form-control station" id="handle_station" placeholder="输入站名或拼音首字母" onkeyup="tip(this)">
+                <ul class="list-group tip"></ul>
+              </div>
+              <div class="form-group">
+                <label for="operation_time" class="required">加油时间：</label>
+                <input type="text" class="form-control" id="operation_time" onfocus="WdatePicker({ dateFmt:'yyyy-MM-dd HH:mm:ss'})" placeholder="请选择加油时间" autocomplete="off">
+              </div>
+            </form>
+            <dl class="list-group" id="box_info">
+              <dt>已添加集装箱:</dt>
+              <dd class="list-group-item"></dd>
+            </dl>
+          </div>
+          <div class="operationItem">
+            <div class="operationItemTitle">
+              添加集装箱
+            </div>
+            <form class="form-inline">
+              <div class="form-group">
+                <label for="box_num" class="required">加油箱号：</label>
+                <input type="text" class="form-control" id="box_num"  autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label for="set_temp">设定温度：</label>
+                <input type="text" class="form-control" id="set_temp"  autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label for="gasoline">加汽油量：</label>
+                <input type="text" class="form-control" id="gasoline"  autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label for="diesel_oil">加柴油量：</label>
+                <input type="text" class="form-control" id="diesel_oil"  autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label for="engine_oil">加机油量：</label>
+                <input type="text" class="form-control" id="engine_oil"  autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label for="abnormal_situation">异常情况：</label>
+                <input type="text" class="form-control" id="abnormal_situation"  autocomplete="off">
+              </div>
+              <button type="button" class="btn btn-default btn-sm" id="add_box" onclick="addOilBox()">保存集装箱</button>
+            </form>
+          </div>
+          <div class="myform_button">
+            <button type="button" class="btn btn-info" onclick="saveOil()">保存操作</button>
+          </div>
+        </div>
+      </div>
+    </div> -->
+    <!-- 洗箱作业 -->
+    <!-- <div class="mask washMask" style="display: block;">
+      <div class="addWash">
+        <div class="mask_title">
+          添加洗箱作业<span class="close">×</span>
+        </div>
+        <div class="mask_main">
+          <div class="operationItem">
+            <div class="operationItemTitle">
+              操作信息
+            </div>
+            <form class="form-inline">
+              <div class="form-group">
+                <label for="handle_station" class="required">办理站：</label>
+                <input type="text" class="form-control station" id="handle_station" placeholder="输入站名或拼音首字母" onkeyup="tip(this)">
+                <ul class="list-group tip"></ul>
+              </div>
+              <div class="form-group">
+                <label for="operation_time" class="required">洗箱时间：</label>
+                <input type="text" class="form-control" id="operation_time" onfocus="WdatePicker({ dateFmt:'yyyy-MM-dd HH:mm:ss'})" placeholder="请选择洗箱时间" autocomplete="off">
+              </div>
+            </form>
+            <dl class="list-group" id="img_info">
+              <dt>已添加图片:</dt>
+            </dl>
+            <dl class="list-group" id="box_info">
+              <dt>已添加集装箱:</dt>
+              <dd class="list-group-item"></dd>
+            </dl>
+          </div>
+          <div class="operationItem">
+            <div class="operationItemTitle">
+              添加图片
+            </div>
+            <ul id="img_list"></ul>
+            <input type="file" id="addImg" accept="image/*">
+            <form class="form-inline">
+              <div class="form-group">
+                <label for="box_num" class="required">箱号：</label>
+                <input type="text" class="form-control" id="box_num"  autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label for="abnormal_situation">异常情况：</label>
+                <input type="text" class="form-control" id="abnormal_situation"  autocomplete="off">
+              </div>
+              <button type="button" class="btn btn-default btn-sm" id="add_box" onclick="addWashBox()">保存集装箱</button>
+            </form>
+          </div>
+          <div class="myform_button">
+            <button type="button" class="btn btn-info" onclick="saveWash()">保存操作</button>
+          </div>
+        </div>
+      </div>
+    </div> -->
+  </div>
+  <script>
+    $("#list_type").multiselect({
+      buttonWidth: '200px',
+      selectAllText: '全选',
+      filterPlaceholder: '搜索',
+      includeSelectAllOption: true,
+      enableFiltering: true,
+      nonSelectedText: '最少选一种操作',
+      numberDisplayed: 2,
+      maxHeight: 400,
+    });
+    $(function(){
+      // 页面初始化
+      pageInit();
+      // 初始化头部
+      new Header('#header');
+      // 初始化导航
+      new Nav('#nav');
+      // 货场列表
+      operationList();
+      showBoxList();   
+    })
+  </script>
+  <script>
+    var tableRow = null;
+    var list_type = '';
+    var list_id = '';
+    var box_info = [];
+    var box_id = '';
+    var img_info = []; //添加图片列表
+    var img_list = []; //获取已添加图片列表
+    function pageInit(){
+      tableRow = null;
+      list_type = '';
+      list_id = '';
+      box_info = [];
+      box_id = '';
+      img_info = [];
+      img_list = [];
+    }
+    function operationList(){
+      pageInit();
+      var searchListType = ''
+      if($('#list_type').val() != null){
+        for(var i=0;i<$('#list_type').val().length;i++){
+          searchListType += $('#list_type').val()[i] + ','
+        }
+      }
+      $.ajax({
+        type: 'post',
+        url: reqDomain + '/container/station/operation_list',
+        data: {
+          channel: 'web',
+          list_type: searchListType,
+          startTime: $('#start_time').val(),
+          endTime: $('#end_time').val(),
+          keywords: $('#keywords').val(),
+        },
+        success: function(data){
+          if(data.code == 200){
+            $("#indexTable").bootstrapTable("load",data.result.operationInfo);
+          }
+        }
+      })
+    }
+    //行程表格
+    $('#indexTable').bootstrapTable({
+      sortable:true,
+      height: document.getElementsByTagName('body')[0].scrollHeight-200,
+      sortOrder:'travel_id desc',
+      toolbar: '#operationGroup',
+      clickToSelect: true,
+      showExport: true,
+      pagination: true,
+      search: true,
+	    searchTimeOut: 700,
+      paginationLoop: true,
+      pageNumber: 1,
+      pageSize: 15,
+      exportDataType: 'all',
+      columns:[
+        {
+          title:'序号',
+          formatter: function(value, row, index) {
+            return index + 1;
+          },
+          width:'10%',
+        },
+        {
+          title:'操作类型',
+          field:'list_type',
+          formatter: function(value){
+            if(value == 1){
+              return '场内搬移'
+            }else if(value == 2){
+              return '站外派送'
+            }else if(value == 3){
+              return '充电作业'
+            }else if(value == 4){
+              return '加油作业';
+            }else{
+              return '洗箱作业'
+            }
+          }
+        },
+        {
+          title: '办理站',
+          field: 'handle_station'
+        },
+        {
+          title:'操作时间',
+          field:'operation_time',
+          formatter: function(value){
+            return formatTime(value);
+          }
+        },
+      ]
+    });
+    // 点击表格行
+    $("#indexTable").on('click-row.bs.table', function(e, row, element) {
+      $(element).addClass('bg').siblings().removeClass('bg');
+      tableRow = row;
+      list_id = tableRow.list_id
+    })    
+    // 添加货场操作
+    $('#addOperation li').click(function(){
+      pageInit()
+      list_type = $(this).index() + 1;
+      if(list_type == 1){
+        // $('.moveInsideMask').show()
+        showMoveInsideMask();
+        showBoxList();        
+      }else if(list_type == 2){
+        // $('.deliverMask').show()
+        showDeliverMask()
+        showDeliverBoxList()
+      }else if(list_type == 3){
+        // $('.chargeMask').show()
+        showChargeMask()
+        showChargeBoxList()
+      }else if(list_type == 4){
+        // $('.oilMask').show();
+        showOilMask()
+        showOilBoxList()
+      }else{
+        // $('.washMask').show()
+        showWashMask()
+        showWashBoxList()
+      }
+      $('.close').click(function(){
+        $('.mask').remove()
+      })
+    })
+    // 显示场内搬移
+    function showMoveInsideMask(data){
+      var str = '<div class="mask moveInsideMask">' +
+        '<div class="addMoveInside">' +
+          '<div class="mask_title">场内搬移<span class="close">×</span></div>' +
+          '<div class="mask_main">' +
+            '<div class="operationItem">' +
+              '<div class="operationItemTitle">操作信息</div>' +
+              '<form class="form-inline">' +
+                '<div class="form-group">' +
+                  '<label for="handle_station" class="required">办理站：</label>' +
+                  '<input type="text" class="form-control station" id="handle_station" placeholder="输入站名或拼音首字母" onkeyup="tip(this)">' +
+                  '<ul class="list-group tip"></ul>' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label for="operation_time" class="required">搬移时间：</label>' +
+                  '<input type="text" class="form-control" id="operation_time" onfocus="WdatePicker({ dateFmt:\'yyyy-MM-dd HH:mm:ss\'})" placeholder="请选择搬移时间" autocomplete="off">' +
+                '</div>' +
+              '</form>' +
+              '<dl class="list-group" id="box_info">' +
+                '<dt>已添加集装箱:</dt>' +
+                '<dd class="list-group-item"></dd>' +
+              '</dl>' +
+            '</div>' +
+            '<div class="operationItem">' +
+              '<div class="operationItemTitle">添加集装箱</div>' +
+              '<form class="form-inline">' +
+                '<div class="form-group">' +
+                  '<label for="box_num" class="required">集装箱箱号：</label>' +
+                  '<input type="text" class="form-control" id="box_num"  autocomplete="off">' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label for="original_position">原位置：</label>' +
+                '<input type="text" class="form-control" id="original_position"  autocomplete="off">' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label for="move_position">搬移位置：</label>' +
+                  '<input type="text" class="form-control" id="move_position"  autocomplete="off">' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label for="move_reason">搬移原因：</label>' +
+                  '<input type="text" class="form-control" id="move_reason"  autocomplete="off">' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label for="set_temp">设置温度：</label>' +
+                  '<input type="text" class="form-control" id="set_temp"  autocomplete="off">' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label for="open_temp">开机温度：</label>' +
+                  '<input type="text" class="form-control" id="open_temp"  autocomplete="off">' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label for="box_type">箱型：</label>' +
+                  '<div style="display:inline-block" id="box_type">' +
+                    '<div class="radio">' +
+                      '<label><input type="radio" value="0" name="box_type">重箱</label>' +
+                    '</div>' +
+                    '<div class="radio">' +
+                      '<label><input type="radio" value="1" name="box_type">空箱</label>' +
+                    '</div>' +
+                  '</div>' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label for="box_status">箱状：</label>' +
+                  '<div style="display:inline-block" id="box_status">' +
+                    '<div class="radio">' +
+                      '<label><input type="radio" value="0" name="box_status">正常</label>' +
+                    '</div>' +
+                    '<div class="radio">' +
+                      '<label><input type="radio" value="1" name="box_status">异常</label>' +
+                    '</div>' +
+                  '</div>' +
+                '</div>' +
+                '<button type="button" class="btn btn-default btn-sm" id="add_box" onclick="addMoveInsideBox()">保存集装箱</button>' +
+              '</form>' +
+            '</div>' +
+            '<div class="myform_button">' +
+              '<button type="button" class="btn btn-info" onclick="saveMoveInside()">保存操作</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+      $('#main').append(str);
+      $('#box_num').val('TBJU190')
+      if(data != undefined){
+        $('#handle_station').val(data.operation[0].handle_station)
+        $('#operation_time').val(formatTime1(data.operation[0].operation_time))
+        for(var i=0;i<data.box.length;i++){
+          if(Number(data.box[i].set_temp) == '-999'){
+            data.box[i].set_temp = ''
+          }
+        }
+        box_info = data.box
+      }
+    }
+    // 显示站外配送
+    function showDeliverMask(data){
+      var str = '<div class="mask deliverMask">' +
+        '<div class="addDeliver">' +
+          '<div class="mask_title">站外配送<span class="close">×</span></div>' +
+          '<div class="mask_main">' +
+            '<div class="operationItem">' +
+              '<div class="operationItemTitle">操作信息</div>' +
+              '<form class="form-inline">' +
+                '<div class="form-group">' +
+                  '<label for="handle_station" class="required">办理站：</label>' +
+                  '<input type="text" class="form-control station" id="handle_station" placeholder="输入站名或拼音首字母" onkeyup="tip(this)">' +
+                  '<ul class="list-group tip"></ul>' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label for="operation_time" class="required">交接时间：</label>' +
+                  '<input type="text" class="form-control" id="operation_time" onfocus="WdatePicker({ dateFmt:\'yyyy-MM-dd HH:mm:ss\'})" placeholder="请选择交接时间" autocomplete="off">' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label for="delivery_company">交付单位：</label>' +
+                  '<input type="text" class="form-control" id="delivery_company" placeholder="请输入交付单位">' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label for="accept_company">接收单位：</label>' +
+                  '<input type="text" class="form-control" id="accept_company" placeholder="请输入接收单位">' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label for="departure_time">出站时间：</label>' +
+                  '<input type="text" class="form-control" id="departure_time" onfocus="WdatePicker({ dateFmt:\'yyyy-MM-dd HH:mm:ss\'})" placeholder="请选择出站时间" autocomplete="off">' +
+                '</div>' +
+              '</form>' +
+              '<dl class="list-group" id="box_info">' +
+                '<dt>已添加集装箱:</dt>' +
+                '<dd class="list-group-item"></dd>' +
+              '</dl>' +
+            '</div>' +
+            '<div class="operationItem">' +
+              '<div class="operationItemTitle">添加集装箱</div>' +
+              '<form class="form-inline">' +
+                '<div class="form-group">' +
+                  '<label for="box_num" class="required">集装箱箱号：</label>' +
+                  '<input type="text" class="form-control" id="box_num"  autocomplete="off">' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label for="move_car_num">搬出汽车号：</label>' +
+                  '<input type="text" class="form-control" id="move_car_num"  autocomplete="off">' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label for="outgoing_temp">出站温度：</label>' +
+                  '<input type="text" class="form-control" id="outgoing_temp"  autocomplete="off">' +
+                '</div>' +
+                '<button type="button" class="btn btn-default btn-sm" id="add_box" onclick="addDeliverBox()">保存集装箱</button>' +
+              '</form>' +
+            '</div>' +
+            '<div class="myform_button">' +
+              '<button type="button" class="btn btn-info" onclick="saveDeliver()">保存操作</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>'
+      $('#main').append(str);
+      $('#box_num').val('TBJU190');
+      if(data != undefined){
+        $('#handle_station').val(data.operation[0].handle_station);
+        $('#delivery_company').val(data.operation[0].delivery_company);
+        $('#accept_company').val(data.operation[0].accept_company);
+        $('#departure_time').val(formatTime1(data.operation[0].departure_time));
+        $('#operation_time').val(formatTime1(data.operation[0].operation_time));
+        for(var i=0;i<data.box.length;i++){
+          if(Number(data.box[i].set_temp) == '-999'){
+            data.box[i].set_temp = ''
+          }
+        }
+        box_info = data.box
+      }
+    }
+    // 显示充电作业
+    function showChargeMask(data){
+      var str = '<div class="mask chargeMask">' +
+        '<div class="addCharge">' +
+          '<div class="mask_title">充电作业<span class="close">×</span></div>' +
+          '<div class="mask_main">' +
+            '<div class="operationItem">' +
+              '<div class="operationItemTitle">操作信息</div>' +
+              '<form class="form-inline">' +
+                '<div class="form-group">' +
+                  '<label for="handle_station" class="required">办理站：</label>' +
+                  '<input type="text" class="form-control station" id="handle_station" placeholder="输入站名或拼音首字母" onkeyup="tip(this)">' +
+                  '<ul class="list-group tip"></ul>' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label for="operation_time" class="required">充电时间：</label>' +
+                  '<input type="text" class="form-control" id="operation_time" onfocus="WdatePicker({ dateFmt:\'yyyy-MM-dd HH:mm:ss\'})" placeholder="请选择充电时间" autocomplete="off">' +
+                '</div>' +
+              '</form>' +
+              '<dl class="list-group" id="box_info">' +
+                '<dt>已添加集装箱:</dt>' +
+                '<dd class="list-group-item"></dd>' +
+              '</dl>' +
+            '</div>' +
+            '<div class="operationItem">' +
+              '<div class="operationItemTitle">添加集装箱</div>' +
+              '<form class="form-inline">' +
+                '<div class="form-group">' +
+                  '<label for="box_num" class="required">充电箱号：</label>' +
+                  '<input type="text" class="form-control" id="box_num"  autocomplete="off">' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label for="set_temp">设定温度：</label>' +
+                  '<input type="text" class="form-control" id="set_temp"  autocomplete="off">' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label for="charging_time">充电时长：</label>' +
+                  '<input type="text" class="form-control" id="charging_time"  autocomplete="off">' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label for="abnormal_situation">异常情况：</label>' +
+                  '<input type="text" class="form-control" id="abnormal_situation"  autocomplete="off">' +
+                '</div>' +
+                '<button type="button" class="btn btn-default btn-sm" id="add_box" onclick="addChargeBox()">保存集装箱</button>' +
+              '</form>' +
+            '</div>' +
+            '<div class="myform_button">' +
+              '<button type="button" class="btn btn-info" onclick="saveCharge()">保存操作</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+      $('#main').append(str)
+      if(data != undefined){
+        $('#handle_station').val(data.operation[0].handle_station);
+        $('#operation_time').val(formatTime1(data.operation[0].operation_time));
+        for(var i=0;i<data.box.length;i++){
+          if(Number(data.box[i].set_temp) == '-999'){
+            data.box[i].set_temp = ''
+          }
+        }
+        box_info = data.box
+      }
+    }
+    // 显示加油作业
+    function showOilMask(data){
+      var str = '<div class="mask oilMask">' +
+        '<div class="addOil">' +
+          '<div class="mask_title">加油作业<span class="close">×</span></div>' +
+          '<div class="mask_main">' +
+            '<div class="operationItem">' +
+              '<div class="operationItemTitle">操作信息</div>' +
+              '<form class="form-inline">' +
+                '<div class="form-group">' +
+                  '<label for="handle_station" class="required">办理站：</label>' +
+                  '<input type="text" class="form-control station" id="handle_station" placeholder="输入站名或拼音首字母" onkeyup="tip(this)">' +
+                  '<ul class="list-group tip"></ul>' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label for="operation_time" class="required">加油时间：</label>' +
+                  '<input type="text" class="form-control" id="operation_time" onfocus="WdatePicker({ dateFmt:\'yyyy-MM-dd HH:mm:ss\'})" placeholder="请选择加油时间" autocomplete="off">' +
+                '</div>' +
+              '</form>' +
+              '<dl class="list-group" id="box_info">' +
+                '<dt>已添加集装箱:</dt>' +
+                '<dd class="list-group-item"></dd>' +
+              '</dl>' +
+            '</div>' +
+            '<div class="operationItem">' +
+              '<div class="operationItemTitle">添加集装箱</div>' +
+              '<form class="form-inline">' +
+                '<div class="form-group">' +
+                  '<label for="box_num" class="required">加油箱号：</label>' +
+                  '<input type="text" class="form-control" id="box_num"  autocomplete="off">' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label for="set_temp">设定温度：</label>' +
+                  '<input type="text" class="form-control" id="set_temp"  autocomplete="off">' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label for="gasoline">加汽油量：</label>' +
+                  '<input type="text" class="form-control" id="gasoline"  autocomplete="off">' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label for="diesel_oil">加柴油量：</label>' +
+                  '<input type="text" class="form-control" id="diesel_oil"  autocomplete="off">' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label for="engine_oil">加机油量：</label>' +
+                  '<input type="text" class="form-control" id="engine_oil"  autocomplete="off">' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label for="abnormal_situation">异常情况：</label>' +
+                  '<input type="text" class="form-control" id="abnormal_situation"  autocomplete="off">' +
+                '</div>' +
+                '<button type="button" class="btn btn-default btn-sm" id="add_box" onclick="addOilBox()">保存集装箱</button>' +
+              '</form>' +
+            '</div>' +
+            '<div class="myform_button">' +
+              '<button type="button" class="btn btn-info" onclick="saveOil()">保存操作</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+      $('#main').append(str)
+      if(data != undefined){
+        $('#handle_station').val(data.operation[0].handle_station);
+        $('#operation_time').val(formatTime1(data.operation[0].operation_time));
+        for(var i=0;i<data.box.length;i++){
+          if(Number(data.box[i].set_temp) == '-999'){
+            data.box[i].set_temp = ''
+          }
+        }
+        box_info = data.box
+      }
+    }
+    // 显示洗箱作业
+    function showWashMask(data){
+      var str = '<div class="mask washMask" style="display: block;">' +
+        '<div class="addWash">' +
+          '<div class="mask_title">洗箱作业<span class="close">×</span></div>' +
+          '<div class="mask_main">' +
+            '<div class="operationItem">' +
+              '<div class="operationItemTitle">操作信息</div>' +
+              '<form class="form-inline">' +
+                '<div class="form-group">' +
+                  '<label for="handle_station" class="required">办理站：</label>' +
+                  '<input type="text" class="form-control station" id="handle_station" placeholder="输入站名或拼音首字母" onkeyup="tip(this)">' +
+                  '<ul class="list-group tip"></ul>' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label for="operation_time" class="required">洗箱时间：</label>' +
+                  '<input type="text" class="form-control" id="operation_time" onfocus="WdatePicker({ dateFmt:\'yyyy-MM-dd HH:mm:ss\'})" placeholder="请选择洗箱时间" autocomplete="off">' +
+                '</div>' +
+              '</form>' +
+              '<dl class="list-group" id="img_info">' +
+                '<dt>已添加图片:</dt>' +
+              '</dl>' +
+              '<dl class="list-group" id="box_info">' +
+                '<dt>已添加集装箱:</dt>' +
+                '<dd class="list-group-item"></dd>' +
+              '</dl>' +
+            '</div>' +
+            '<div class="operationItem">' +
+              '<div class="operationItemTitle">添加图片</div>' +
+              '<ul id="img_list"></ul>' +
+              '<input type="file" id="addImg" accept="image/*">' +
+              '<form class="form-inline">' +
+                '<div class="form-group">' +
+                  '<label for="box_num" class="required">箱号：</label>' +
+                  '<input type="text" class="form-control" id="box_num"  autocomplete="off">' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label for="abnormal_situation">异常情况：</label>' +
+                  '<input type="text" class="form-control" id="abnormal_situation"  autocomplete="off">' +
+                '</div>' +
+                '<button type="button" class="btn btn-default btn-sm" id="add_box" onclick="addWashBox()">保存集装箱</button>' +
+              '</form>' +
+            '</div>' +
+            '<div class="myform_button">' +
+              '<button type="button" class="btn btn-info" onclick="saveWash()">保存操作</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+      $('#main').append(str)
+      $('#box_num').val('TBJU190')
+      showImg()
+      // 洗箱作业
+      $('#addImg').change(function(){
+        if(this.files[0].size / 1024 / 1024 > 1){
+          layer.msg('上传的图片不能大于1M');
+          $(this).val('')
+          return false;
+        }
+        img_info.push({
+          // 不兼容id9
+          src: window.URL.createObjectURL(this.files[0]),
+          files: this.files[0]
+        })
+        showImg()
+      })
+      if(data != undefined){
+        $('#handle_station').val(data.operation[0].handle_station);
+        $('#operation_time').val(formatTime1(data.operation[0].operation_time));
+        box_info = data.box
+        img_list = data.img
+      }
+    }
+    // 修改
+    function changeOperation(){
+      if(tableRow == null){
+        llayer.msg('请选择一条记录！')
+        return false
+      }
+      $.ajax({
+        async: false,
+        type: 'post',
+        url: reqDomain + '/container/station/operation_detail',
+        data: {
+          channel: 'web',
+          list_id: list_id
+        },
+        success: function(data){
+          if(data.code == 200){
+            showOperationChange(data.result)
+          }
+        }
+      })
+    }
+    function showOperationChange(data){
+      if(tableRow.list_type == 1){
+        // $('.moveInsideMask').show()
+        showMoveInsideMask(data);
+        showBoxList();
+      }else if(tableRow.list_type == 2){
+        // $('.deliverMask').show()
+        showDeliverMask(data)
+        showDeliverBoxList()
+      }else if(tableRow.list_type == 3){
+        // $('.chargeMask').show()
+        showChargeMask(data)
+        showChargeBoxList()
+      }else if(tableRow.list_type == 4){
+        // $('.oilMask').show();
+        showOilMask(data)
+        showOilBoxList()
+      }else{
+        // $('.washMask').show()
+        showWashMask(data)
+        showWashBoxList()
+        showImgList()
+      }
+      list_type = tableRow.list_type
+      $('.close').click(function(){
+        $('.mask').remove()
+      })
+    }
+    // 车站输入框提示
+    function tip(el){
+      if($(el).val().trim().length >= 2){
+        $(el).next('ul').empty()
+        $.ajax({
+          type : 'POST',
+          url : reqDomain + "/container/waybill/station_list",
+          data: {
+            channel: 'web',
+            keywords: $(el).val()
+          },
+          dataType:"json",
+          xhrFields:{
+            withCredentials: true
+          },
+          success:function(data){
+            if(data.code == 200){
+              $(el).next('ul').show();
+              if(data.result == 0){
+                $(el).next('ul').html('<li class="list-group-item">未检索到车站</li>')
+              }else{
+                for(var i=0;i<data.result.length;i++){
+                  $(el).next('ul').append('<li class="list-group-item">'+data.result[i].station+'</li>')
+                  $('.tip li').click(function(){
+                    $(el).val($(this).text())
+                    $(this).parent().hide();
+                  })
+                }                
+              }
+            }
+          }				
+        });
+      }else{
+        $(el).next('ul').hide()
+      }
+    }
+    // 删除已添加集装箱
+    function deleteBox(index){
+      layer.confirm('确定要删除该集装箱么？',function(){
+        for(var i=0;i<box_info.length;i++){
+          if(box_info[i].box_num == box_info[index].box_num){
+            box_info.splice(i,1);
+            layer.msg('删除成功');
+            if(tableRow.list_type == 1){
+              showBoxList();
+            }else if(tableRow.list_type == 2){
+              showDeliverBoxList()
+            }else if(tableRow.list_type == 3){
+              showChargeBoxList()
+            }else if(tableRow.list_type == 4){
+              showOilBoxList()
+            }else{
+              showWashBoxList()
+            }
+            break;
+          }
+        }
+      })
+    }
+    // 场内搬移
+    // 添加箱子
+    function addMoveInsideBox(){
+      if($('#box_num').val().length != 11){
+        layer.msg('请输入十一位箱号')
+      }else{
+        if(box_info.length == 0){
+          box_info.push({
+            'box_id': box_id,
+            'box_num': $('#box_num').val(),
+            'original_position': $('#original_position').val(),
+            'move_position': $('#move_position').val(),
+            'move_reason': $('#move_reason').val(),
+            'set_temp': $('#set_temp').val(),
+            'open_temp': $('#open_temp').val(),
+            'box_type': $('#box_type').find('input:checked').val(),
+            'box_status': $('#box_status').find('input:checked').val(),
+          })          
+        }else{
+          var change = false
+          for(var i=0;i<box_info.length;i++){
+            if(box_info[i].id == box_id && box_id != ''){
+              change = true;
+              box_info[i].id = box_id
+              box_info[i].box_num = $('#box_num').val()
+              box_info[i].original_position = $('#original_position').val()
+              box_info[i].move_position = $('#move_position').val()
+              box_info[i].move_reason = $('#move_reason').val()
+              box_info[i].set_temp = $('#set_temp').val()
+              box_info[i].open_temp = $('#open_temp').val()
+              box_info[i].box_type = $('#box_type').find('input:checked').val()
+              box_info[i].box_status = $('#box_status').find('input:checked').val()
+            }
+          }
+          if(!change){
+            var have = false;
+            for(var i=0;i<box_info.length;i++){
+              if(box_info[i].box_num == $('#box_num').val()){
+                have = true;
+                break;
+              }
+            }
+            if(have){
+              layer.msg('该箱号已被添加，请确认箱号')
+            }else{
+              box_info.push({
+                'id': box_id,
+                'box_num': $('#box_num').val(),
+                'original_position': $('#original_position').val(),
+                'move_position': $('#move_position').val(),
+                'move_reason': $('#move_reason').val(),
+                'set_temp': $('#set_temp').val(),
+                'open_temp': $('#open_temp').val(),
+                'box_type': $('#box_type').find('input:checked').val(),
+                'box_status': $('#box_status').find('input:checked').val(),
+              })
+            }
+          }
+        }
+        box_id = '';
+        $('#box_num').val('TBJU190')
+        layer.msg('保存集装箱成功')
+        showBoxList()
+      }
+    }
+    // 保存操作
+    function saveMoveInside(){
+      if($('#handle_station').val() == '' || $('#operation_time').val() == ''){
+        layer.msg('请填写必填项！');
+        return false
+      }else if(box_info.length == ''){
+        layer.msg('至少添加一个集装箱！');
+        return false
+      }
+      $.ajax({
+        type: 'POST',
+        url: reqDomain + "/container/station/operation_save",
+        dataType: 'json',
+        data: {
+          channel: 'web',
+          'list_id': list_id,
+          'list_type': list_type,
+          'handle_station': $('#handle_station').val(),
+          'operation_time': $('#operation_time').val(),
+          'box_info': JSON.stringify(box_info)
+        },
+        success: function(data){
+          if(data.code == 200){
+            layer.msg('保存成功');
+            operationList();
+            close();
+          }
+        }
+      })
+    }
+    // 已添加集装箱列表
+    function showBoxList(){
+      $('#box_info dd').remove();
+      if(box_info.length == 0){
+        $('#box_info').append('<dd class="list-group-item"><span>暂无</span></dd>')
+      }else{
+        for(var i=0;i<box_info.length;i++){
+          $('#box_info').append('<dd class="list-group-item"><span>'+box_info[i].box_num+'</span><span class="box_op"><button class="glyphicon glyphicon-edit" onclick="editMoveInsideBox('+i+')"></button><button class="glyphicon glyphicon-remove" onclick="deleteBox('+i+')"></button></span></dd>')
+        }
+      }
+      $('#box_info dd').hover(function(){
+        for(var i=0;i<box_info.length;i++){
+          if(box_info[i].box_num == $(this).find('span:eq(0)').text()){
+            var str = '<ul class="list-group box_detail">';
+            str += '<li class="list-group-item"><span>箱号：</span><span>'+box_info[i].box_num+'</span></li>';
+            str += '<li class="list-group-item"><span>原位置：</span><span>'+box_info[i].original_position+'</span></li>';
+            str += '<li class="list-group-item"><span>搬移位置：</span><span>'+box_info[i].move_position+'</span></li>';
+            str += '<li class="list-group-item"><span>搬移原因：</span><span>'+box_info[i].move_reason+'</span></li>';
+            str += '<li class="list-group-item"><span>设定温度（℃）：</span><span>'+box_info[i].set_temp+'</span></li>';
+            str += '<li class="list-group-item"><span>开机温度（℃）：</span><span>'+box_info[i].open_temp+'</span></li>';
+            str += '<li class="list-group-item"><span>箱型：</span><span>'+dealRadioValue(box_info[i].box_type,'重箱','空箱')+'</span></li>';
+            str += '<li class="list-group-item"><span>箱状：</span><span>'+dealRadioValue(box_info[i].box_status,'正常','异常')+'</span></li></ul>';
+            $(this).append(str);      
+            break;
+          }
+        }
+      },function(){
+        $('.box_detail').remove();
+      })
+    }
+    // 编辑已添加集装箱
+    function editMoveInsideBox(index){
+      $('#box_info dd:eq('+index+')').addClass('disabled');
+      $('#box_info dd:eq('+index+')').find('button').attr('disabled',"disabled");
+      for(var i=0;i<box_info.length;i++){
+        if(box_info[i].box_num == box_info[index].box_num){
+          $('#box_num').val(box_info[i].box_num)
+          $('#original_position').val(box_info[i].original_position)
+          $('#move_position').val(box_info[i].move_position)
+          $('#move_reason').val(box_info[i].move_reason)
+          $('#set_temp').val(box_info[i].set_temp)
+          $('#open_temp').val(box_info[i].open_temp)
+          $('#loading_time').val(box_info[i].loading_time)
+          if(box_info[i].box_type == 0){
+            $('#box_type input:eq(0)').prop('checked',true);
+          }else if(box_info[i].box_type == 1){
+            $('#box_type input:eq(1)').prop('checked',true);
+          }
+          if(box_info[i].box_status == 0){
+            $('#box_status input:eq(0)').prop('checked',true);
+          }else if(box_info[i].box_status == 1){
+            $('#box_status input:eq(1)').prop('checked',true);
+          }
+          box_id = box_info[i].id
+          break;
+        }
+      }
+    }
+    // 站外配送
+    // 添加箱子
+    function addDeliverBox(){
+      if($('#box_num').val().length != 11){
+        layer.msg('请输入十一位箱号')
+      }else{
+        if(box_info.length == 0){
+          box_info.push({
+            'id': box_id,
+            'box_num': $('#box_num').val(),
+            'outgoing_temp': $('#outgoing_temp').val(),
+            'move_car_num': $('#move_car_num').val(),
+          })          
+        }else{
+          var change = false
+          for(var i=0;i<box_info.length;i++){
+            if(box_info[i].id == box_id && box_id != ''){
+              change = true;
+              box_info[i].id = box_id
+              box_info[i].box_num = $('#box_num').val()
+              box_info[i].outgoing_temp = $('#outgoing_temp').val()
+              box_info[i].move_car_num = $('#move_car_num').val()
+            }
+          }
+          if(!change){
+            var have = false;
+            for(var i=0;i<box_info.length;i++){
+              if(box_info[i].box_num == $('#box_num').val()){
+                have = true;
+                break;
+              }
+            }
+            if(have){
+              layer.msg('该箱号已被添加，请确认箱号')
+            }else{
+              box_info.push({
+                'id': box_id,
+                'box_num': $('#box_num').val(),
+                'outgoing_temp': $('#outgoing_temp').val(),
+                'move_car_num': $('#move_car_num').val(),
+              })
+            }
+          }
+        }
+        console.log(box_info)
+        box_id = '';
+        $('#box_num').val('TBJU190')
+        layer.msg('保存集装箱成功')
+        showDeliverBoxList()
+      }
+    }
+    // 已添加集装箱列表
+    function showDeliverBoxList(){
+      $('#box_info dd').remove();
+      if(box_info.length == 0){
+        $('#box_info').append('<dd class="list-group-item"><span>暂无</span></dd>')
+      }else{
+        for(var i=0;i<box_info.length;i++){
+          $('#box_info').append('<dd class="list-group-item"><span>'+box_info[i].box_num+'</span><span class="box_op"><button class="glyphicon glyphicon-edit" onclick="editDeliverBox('+i+')"></button><button class="glyphicon glyphicon-remove" onclick="deleteBox('+i+')"></button></span></dd>')
+        }
+      }
+      $('#box_info dd').hover(function(){
+        for(var i=0;i<box_info.length;i++){
+          if(box_info[i].box_num == $(this).find('span:eq(0)').text()){
+            var str = '<ul class="list-group box_detail">';
+            str += '<li class="list-group-item"><span>箱号：</span><span>'+box_info[i].box_num+'</span></li>';
+            str += '<li class="list-group-item"><span>搬出汽车号：</span><span>'+box_info[i].move_car_num+'</span></li>';
+            str += '<li class="list-group-item"><span>出站温度（℃）：</span><span>'+box_info[i].outgoing_temp+'</span></li><ul>';
+            $(this).append(str);      
+            break;
+          }
+        }
+      },function(){
+        $('.box_detail').remove();
+      })
+    }
+    // 编辑已添加集装箱
+    function editDeliverBox(index){
+      $('#box_info dd:eq('+index+')').addClass('disabled');
+      $('#box_info dd:eq('+index+')').find('button').attr('disabled',"disabled");
+      for(var i=0;i<box_info.length;i++){
+        if(box_info[i].box_num == box_info[index].box_num){
+          $('#box_num').val(box_info[i].box_num)
+          $('#move_car_num').val(box_info[i].move_car_num)
+          $('#outgoing_temp').val(box_info[i].outgoing_temp)
+          box_id = box_info[i].id
+          break;
+        }
+      }
+    }
+    // 保存
+    function saveDeliver(){
+      if($('#handle_station').val() == '' || $('#operation_time').val() == ''){
+        layer.msg('请填写必填项！');
+        return false
+      }else if(box_info.length == ''){
+        layer.msg('至少添加一个集装箱！');
+        return false
+      }
+      $.ajax({        
+        type: 'POST',
+        url: reqDomain + "/container/station/operation_save",
+        dataType: 'json',
+        data: {
+          channel: 'web',
+          'list_id': list_id,
+          'list_type': list_type,
+          'handle_station': $('#handle_station').val(),
+          'operation_time': $('#operation_time').val(),
+          'delivery_company': $('#delivery_company').val(),
+          'accept_company': $('#accept_company').val(),
+          'departure_time': $('#departure_time').val(),
+          'box_info': JSON.stringify(box_info)
+        },
+        success: function(data){
+          if(data.code == 200){
+            layer.msg('保存成功');
+            operationList()
+            close();
+          }
+        }
+      })
+    }
+    // 充电作业
+    // 添加箱子
+    function addChargeBox(){
+      if($('#box_num').val() == ''){
+        layer.msg('请输入箱号')
+      }else{
+        if(box_info.length == 0){
+          box_info.push({
+            'id': box_id,
+            'box_num': $('#box_num').val(),
+            'set_temp': $('#set_temp').val(),
+            'charging_time': $('#charging_time').val(),
+            'abnormal_situation': $('#abnormal_situation').val(),
+          })          
+        }else{
+          var change = false
+          for(var i=0;i<box_info.length;i++){
+            if(box_info[i].id == box_id && box_id != ''){
+              change = true;
+              box_info[i].id = box_id
+              box_info[i].box_num = $('#box_num').val()
+              box_info[i].set_temp = $('#set_temp').val()
+              box_info[i].charging_time = $('#charging_time').val()
+              box_info[i].abnormal_situation = $('#abnormal_situation').val()
+            }
+            if(!change){
+              var have = false;
+              for(var i=0;i<box_info.length;i++){
+                if(box_info[i].box_num == $('#box_num').val()){
+                  have = true;
+                  break;
+                }
+              }
+              if(have){
+                layer.msg('该箱号已被添加，请确认箱号')
+              }else{
+                box_info.push({
+                  'id': box_id,
+                  'box_num': $('#box_num').val(),
+                  'set_temp': $('#set_temp').val(),
+                  'charging_time': $('#charging_time').val(),
+                  'abnormal_situation': $('#abnormal_situation').val(),
+                })
+              }
+            }
+          }
+        }
+        box_id = '';
+        $('#box_num').val('')
+        layer.msg('保存集装箱成功')
+        showChargeBoxList()
+      }
+    }
+    // 已添加集装箱列表
+    function showChargeBoxList(){
+      $('#box_info dd').remove();
+      if(box_info.length == 0){
+        $('#box_info').append('<dd class="list-group-item"><span>暂无</span></dd>')
+      }else{
+        for(var i=0;i<box_info.length;i++){
+          $('#box_info').append('<dd class="list-group-item"><span>'+box_info[i].box_num+'</span><span class="box_op"><button class="glyphicon glyphicon-edit" onclick="editChargeBox('+i+')"></button><button class="glyphicon glyphicon-remove" onclick="deleteBox('+i+')"></button></span></dd>')
+        }
+      }
+      $('#box_info dd').hover(function(){
+        for(var i=0;i<box_info.length;i++){
+          if(box_info[i].box_num == $(this).find('span:eq(0)').text()){
+            var str = '<ul class="list-group box_detail">';
+            str += '<li class="list-group-item"><span>箱号：</span><span>'+box_info[i].box_num+'</span></li>';
+            str += '<li class="list-group-item"><span>设定温度（℃）：</span><span>'+box_info[i].set_temp+'</span></li>';
+            str += '<li class="list-group-item"><span>充电时长：</span><span>'+box_info[i].charging_time+'</span></li>';
+            str += '<li class="list-group-item"><span>异常情况：</span><span>'+box_info[i].abnormal_situation+'</span></li><ul>';
+            $(this).append(str);      
+            break;
+          }
+        }
+      },function(){
+        $('.box_detail').remove();
+      })
+    }
+    // 编辑已添加集装箱
+    function editChargeBox(index){
+      $('#box_info dd:eq('+index+')').addClass('disabled');
+      $('#box_info dd:eq('+index+')').find('button').attr('disabled',"disabled");
+      for(var i=0;i<box_info.length;i++){
+        if(box_info[i].box_num == box_info[index].box_num){
+          $('#box_num').val(box_info[i].box_num)
+          $('#set_temp').val(box_info[i].set_temp)
+          $('#charging_time').val(box_info[i].charging_time)
+          $('#abnormal_situation').val(box_info[i].abnormal_situation)
+          box_id = box_info[i].id
+          break;
+        }
+      }
+    }
+    // 保存
+    function saveCharge(){
+      if($('#handle_station').val() == '' || $('#operation_time').val() == ''){
+        layer.msg('请填写必填项！');
+        return false
+      }else if(box_info.length == ''){
+        layer.msg('至少添加一个集装箱！');
+        return false
+      }
+      $.ajax({        
+        type: 'POST',
+        url: reqDomain + "/container/station/operation_save",
+        dataType: 'json',
+        data: {
+          channel: 'web',
+          'list_id': list_id,
+          'list_type': list_type,
+          'handle_station': $('#handle_station').val(),
+          'operation_time': $('#operation_time').val(),
+          'box_info': JSON.stringify(box_info)
+        },
+        success: function(data){
+          if(data.code == 200){
+            layer.msg('保存成功');
+            operationList()
+            close();
+          }
+        }
+      })
+    }
+    // 加油作业
+    // 添加箱子
+    function addOilBox(){
+      if($('#box_num').val() == ''){
+        layer.msg('请输入箱号')
+      }else if($('#gasoline').val() == '' && $('#diesel_oil').val() == '' && $('#engine_oil').val() == ''){
+        layer.msg('请输入至少一种油量')
+      }else{
+        if(box_info.length == 0){
+          box_info.push({
+            'id': box_id,
+            'box_num': $('#box_num').val(),
+            'set_temp': $('#set_temp').val(),
+            'gasoline': $('#gasoline').val(),
+            'diesel_oil': $('#diesel_oil').val(),
+            'engine_oil': $('#engine_oil').val(),
+            'abnormal_situation': $('#abnormal_situation').val(),
+          })          
+        }else{
+          var change = false
+          for(var i=0;i<box_info.length;i++){
+            if(box_info[i].id == box_id && box_id != ''){
+              change = true;
+              box_info[i].id = box_id
+              box_info[i].box_num = $('#box_num').val()
+              box_info[i].set_temp = $('#set_temp').val()
+              box_info[i].gasoline = $('#gasoline').val()
+              box_info[i].diesel_oil = $('#diesel_oil').val()
+              box_info[i].engine_oil = $('#engine_oil').val()
+              box_info[i].abnormal_situation = $('#abnormal_situation').val()
+            }
+          }
+          if(!change){
+            var have = false;
+            for(var i=0;i<box_info.length;i++){
+              if(box_info[i].box_num == $('#box_num').val()){
+                have = true;
+                break;
+              }
+            }
+            if(have){
+              layer.msg('该箱号已被添加，请确认箱号')
+            }else{
+              box_info.push({
+                'id': box_id,
+                'box_num': $('#box_num').val(),
+                'set_temp': $('#set_temp').val(),
+                'gasoline': $('#gasoline').val(),
+                'diesel_oil': $('#diesel_oil').val(),
+                'engine_oil': $('#engine_oil').val(),
+                'abnormal_situation': $('#abnormal_situation').val(),
+              })
+            }
+          }
+        }
+        box_id = '';
+        $('#box_num').val('')
+        layer.msg('保存集装箱成功')
+        showOilBoxList()
+      }
+    }
+    // 已添加集装箱列表
+    function showOilBoxList(){
+      $('#box_info dd').remove();
+      if(box_info.length == 0){
+        $('#box_info').append('<dd class="list-group-item"><span>暂无</span></dd>')
+      }else{
+        for(var i=0;i<box_info.length;i++){
+          $('#box_info').append('<dd class="list-group-item"><span>'+box_info[i].box_num+'</span><span class="box_op"><button class="glyphicon glyphicon-edit" onclick="editOilBox('+i+')"></button><button class="glyphicon glyphicon-remove" onclick="deleteBox('+i+')"></button></span></dd>')
+        }
+      }
+      $('#box_info dd').hover(function(){
+        for(var i=0;i<box_info.length;i++){
+          if(box_info[i].box_num == $(this).find('span:eq(0)').text()){
+            var str = '<ul class="list-group box_detail">';
+            str += '<li class="list-group-item"><span>箱号：</span><span>'+box_info[i].box_num+'</span></li>';
+            str += '<li class="list-group-item"><span>设定温度（℃）：</span><span>'+box_info[i].set_temp+'</span></li>';
+            str += '<li class="list-group-item"><span>加汽油量：</span><span>'+box_info[i].gasoline+'</span></li>';
+            str += '<li class="list-group-item"><span>加柴油量：</span><span>'+box_info[i].diesel_oil+'</span></li>';
+            str += '<li class="list-group-item"><span>加机油量：</span><span>'+box_info[i].engine_oil+'</span></li>';
+            str += '<li class="list-group-item"><span>异常情况：</span><span>'+box_info[i].abnormal_situation+'</span></li><ul>';
+            $(this).append(str);      
+            break;
+          }
+        }
+      },function(){
+        $('.box_detail').remove();
+      })
+    }
+    // 编辑已添加集装箱
+    function editOilBox(index){
+      $('#box_info dd:eq('+index+')').addClass('disabled');
+      $('#box_info dd:eq('+index+')').find('button').attr('disabled',"disabled");
+      for(var i=0;i<box_info.length;i++){
+        if(box_info[i].box_num == box_info[index].box_num){
+          $('#box_num').val(box_info[i].box_num)
+          $('#set_temp').val(box_info[i].set_temp)
+          $('#gasoline').val(box_info[i].gasoline)
+          $('#diesel_oil').val(box_info[i].diesel_oil)
+          $('#engine_oil').val(box_info[i].engine_oil)
+          $('#abnormal_situation').val(box_info[i].abnormal_situation)
+          box_id = box_info[i].id
+          break;
+        }
+      }
+    }
+    // 保存
+    function saveOil(){
+      if($('#handle_station').val() == '' || $('#operation_time').val() == ''){
+        layer.msg('请填写必填项！');
+        return false
+      }else if(box_info.length == ''){
+        layer.msg('至少添加一个集装箱！');
+        return false
+      }
+      $.ajax({        
+        type: 'POST',
+        url: reqDomain + "/container/station/operation_save",
+        dataType: 'json',
+        data: {
+          channel: 'web',
+          'list_id': list_id,
+          'list_type': list_type,
+          'handle_station': $('#handle_station').val(),
+          'operation_time': $('#operation_time').val(),
+          'box_info': JSON.stringify(box_info)
+        },
+        success: function(data){
+          if(data.code == 200){
+            layer.msg('保存成功');
+            operationList()
+            close();
+          }
+        }
+      })
+    }
+    // 图片预览
+    function showImg(){
+      $('#img_list').empty();
+      if(img_info.length == 0){
+        $('#img_list').append('<li><img src="../img/null_img.png" /></li>')
+      }else{
+        for(var i=0;i<img_info.length;i++){
+          $('#img_list').append('<li><span>&times;</span><img src="'+img_info[i].src+'" onclick="openImg(this)" /></li>')
+        }
+      }
+      $('#img_list span').click(function(){
+        var deleteSrc = $(this).next('img').attr('src')
+        layer.confirm('确定要删除该图片么？',function(){
+          for(var i=0;i<img_info.length;i++){
+            if(img_info[i].src == deleteSrc){
+              img_info.splice(i,1);
+              layer.msg('删除成功', {icon: 1});
+              showImg()
+              break;
+            }
+          }
+        })
+      })
+    }
+    
+    // 显示大图
+    function openImg(e){
+      window.open($(e).attr('src'))
+    }
+    // 添加箱子
+    function addWashBox(){
+      if($('#box_num').val().length != 11){
+        layer.msg('请输入十一位箱号')
+      }else{
+        if(box_info.length == 0){
+          box_info.push({
+            'id': box_id,
+            'box_num': $('#box_num').val(),
+            'abnormal_situation': $('#abnormal_situation').val(),
+          })          
+        }else{
+          var change = false
+          for(var i=0;i<box_info.length;i++){
+            if(box_info[i].id == box_id && box_id != ''){
+              change = true;
+              box_info[i].id = box_id
+              box_info[i].box_num = $('#box_num').val()
+              box_info[i].abnormal_situation = $('#abnormal_situation').val()
+            }
+          }
+          if(!change){
+            var have = false;
+            for(var i=0;i<box_info.length;i++){
+              if(box_info[i].box_num == $('#box_num').val()){
+                have = true;
+                break;
+              }
+            }
+            if(have){
+              layer.msg('该箱号已被添加，请确认箱号')
+            }else{
+              box_info.push({
+                'id': box_id,
+                'box_num': $('#box_num').val(),
+                'abnormal_situation': $('#abnormal_situation').val(),
+              })
+            }
+          }
+        }
+        box_id = '';
+        $('#box_num').val('TBJU190')
+        layer.msg('保存集装箱成功')
+        showWashBoxList()
+      }
+    }
+    //已添加集装箱
+    function showWashBoxList(){
+      $('#box_info dd').remove();
+      if(box_info.length == 0){
+        $('#box_info').append('<dd class="list-group-item"><span>暂无</span></dd>')
+      }else{
+        for(var i=0;i<box_info.length;i++){
+          $('#box_info').append('<dd class="list-group-item"><span>'+box_info[i].box_num+'</span><span class="box_op"><button class="glyphicon glyphicon-edit" onclick="editwashBox('+i+')"></button><button class="glyphicon glyphicon-remove" onclick="deleteBox('+i+')"></button></span></dd>')
+        }
+      }
+      $('#box_info dd').hover(function(){
+        for(var i=0;i<box_info.length;i++){
+          if(box_info[i].box_num == $(this).find('span:eq(0)').text()){
+            var str = '<ul class="list-group box_detail">';
+            str += '<li class="list-group-item"><span>箱号：</span><span>'+box_info[i].box_num+'</span></li>';
+            str += '<li class="list-group-item"><span>异常情况：</span><span>'+box_info[i].abnormal_situation+'</span></li><ul>';
+            $(this).append(str);      
+            break;
+          }
+        }
+      },function(){
+        $('.box_detail').remove();
+      })
+    }
+    // 编辑已添加集装箱
+    function editwashBox(index){
+      $('#box_info dd:eq('+index+')').addClass('disabled');
+      $('#box_info dd:eq('+index+')').find('button').attr('disabled',"disabled");
+      for(var i=0;i<box_info.length;i++){
+        if(box_info[i].box_num == box_info[index].box_num){
+          $('#box_num').val(box_info[i].box_num)
+          $('#abnormal_situation').val(box_info[i].abnormal_situation)
+          box_id = box_info[i].id
+          break;
+        }
+      }
+    }
+    // 已添加图片    
+    function showImgList(){
+      $('#img_info dd').remove();
+      if(img_list.length == 0){
+        $('#img_info').append('<dd class="list-group-item"><img src="../img/null_img.png" /></dd>')
+      }else{
+        for(var i=0;i<img_list.length;i++){
+          $('#img_info').append('<dd class="list-group-item"><span>&times;</span><img src="'+reqDomain+img_list[i].img_path+'" id="'+img_list[i].img_id+'" onclick="openImg(this)" /></dd>')
+        }
+      }    
+      $('#img_info span').click(function(){
+        var deleteId = $(this).next('img').attr('id')
+        layer.confirm('确定要删除该图片么？',function(){
+          for(var i=0;i<img_list.length;i++){
+            if(img_list[i].img_id == deleteId){
+              img_list.splice(i,1)
+              showImgList()
+              $.ajax({
+                type: 'POST',
+                url: reqDomain + "/container/station/operation_attachment_delete",
+                dataType: 'json',
+                data: {
+                  channel: 'web',
+                  img_id: deleteId
+                },
+                success: function(data){
+                  if(data.code == 200){
+                    layer.msg('删除成功', {icon: 1});
+                    // 重新获取详细信息
+                    // changeOperation();
+                  }
+                }
+              })
+            }
+          }
+        })
+      })  
+    }
+    // 保存
+    function saveWash(){
+      if($('#handle_station').val() == '' || $('#operation_time').val() == ''){
+        layer.msg('请填写必填项！');
+        return false
+      }else if(box_info.length == ''){
+        layer.msg('至少添加一个集装箱！');
+        return false
+      }
+      var formData = new FormData();
+      formData.append('channel','web');
+      formData.append('list_id',list_id);
+      formData.append('list_type',list_type);
+      formData.append('handle_station',$('#handle_station').val());
+      formData.append('operation_time',$('#operation_time').val());
+      formData.append('box_info',JSON.stringify(box_info));
+      if(img_info.length != 0){
+        for(var i=0;i<img_info.length;i++){
+          formData.append('file'+i,img_info[i].files,img_info[i].files.name)
+        }
+      }
+      $.ajax({        
+        type: 'POST',
+        url: reqDomain + "/container/station/operation_save",
+        dataType: 'json',
+        processData: false,
+        contentType: false,
+        data: formData,
+        success: function(data){
+          if(data.code == 200){
+            layer.msg('保存成功');
+            operationList()
+            close();
+          }
+        }
+      })
+    }
+    // 删除操作
+    function deleteOperation(){
+      if(tableRow == null){
+        layer.msg('请选择一条记录！')
+        return false
+      }
+      layer.confirm('确定要删除此条记录么？',function(){
+        $.ajax({
+          type: 'post',
+          url: reqDomain + '/container/station/operation_delete',
+          dataType: 'json',
+          data: {
+            channel: 'web',
+            'list_id': list_id
+          },
+          success: function(data){
+            if(data.code == 200){
+              layer.msg('删除成功！');
+              operationList();
+            }
+          }
+        })
+      })
+    }
+    // 关闭弹框
+    function close(){
+      $('.mask').remove()
+    }
+    // 处理单选按钮值显示问题
+    function dealRadioValue(value,value0,value1){
+      if(value == 0){
+        return value0
+      }else if(value == 1){
+        return value1
+      }else{
+        return ''
+      }
+    }
+ </script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+/* 数据表格 */
+.boxLatest{width: 60%;float: left;padding-right: 5px;position: relative;}
+/* .tableBtn{margin-bottom: 10px;} */
+#groupList{width: 25%;height: 36px;background-color: white;border:1px solid #cccccc;float: left;}
+#groupList+.btn-group{width: 25%;font-size: 12px;}
+#groupList+.btn-group button{width: 100%;}
+/* 表格搜索按钮 */
+.tableBtn>.opTable{float: right;}
+.tableBtn>.opTable button{outline: none;color: #cccccc;background-color: #fff;border-color: #ccc;display: inline-block;padding: 6px 12px;border: 1px solid #ccc;border-radius: 4px;cursor: pointer;}
+.tableBtn>.opTable button.active{color: #333;background-color: #e6e6e6; border-color: #adadad;box-shadow: inset 0 3px 5px rgba(0,0,0,.125);}
+.tableBtn>.btn-group{float: left;}
+/* 表格搜索框 */
+.boxLatestTable .pull-right.search{width:20%;position: absolute;top: -46px;left: 25%;margin: 2px 0 0 5px;}
+/* 导出，显示列 */
+.boxLatestTable .columns.columns-right.btn-group.pull-right{position: absolute;top: -44px;left: 45%;margin: 0 0 0 10px;}
+.btn-default{color:#cccccc;}
+/* 显示列 */
+.boxLatestTable .keep-open.btn-group{margin: 0 5px 0 0;}
+/* 表格 */
+.boxLatestTable{position: absolute;top: 44px;left: 0;width: 100%;}
+.boxLatestTable .fixed-table-container{border: none;}
+.boxLatestTable table#indexTable{background-color: #fff;}
+.boxLatestTable table thead tr th{height: 20px;background-color: #1199D3;}
+.boxLatestTable table tr th .th-inner{font-size: 12px;color: white;	font-weight: normal;height: 20px;line-height: 20px;padding: 0 20px 0 0;	text-align: center;text-indent: 10px;}
+.boxLatestTable table#indexTable tr{cursor: pointer;}
+.boxLatestTable table#indexTable tr td{font-size: 12px;padding: 3px 5px!important;}
+.boxLatestTable table#indexTable tr.bg td{	background-color:white!important;}
+/* 固定列 */
+.boxLatestTable table tr th:first-child .th-inner{padding: 0;text-indent: 0;}
+.boxLatestTable table tr td:first-child{width: 88px;}
+.boxLatestTable table tr td{font-size: 12px;padding: 3px 5px!important;}
+.boxLatestTable .fixed-table-body-columns{background-color: #e9e9e9!important;}
+/* 统计、地图 */
+.stateMap{width: 40%;float: left;padding-left: 5px;}
+/* 状态统计 */
+.stateMap .stateBtn{overflow: hidden;}
+.stateBtn li{color: white;text-align: center;background-color: #cccccc;float: left;width:19%;margin-right: 1%;height: 34px;border-radius: 8px;	line-height: 34px;cursor: pointer;}
+.stateBtn li.all{background: #00b0f0;}
+.stateBtn li.onLine{background: #00b050;}
+.stateBtn li.outLine{background: #ba84f6;}
+.stateBtn li.outLine img{width: 10px;margin-top: -4px;}
+.stateBtn li.dormant{background: orange;}
+.stateBtn li.alarm{background: #c00000;}
+.stateBtn li span{font-size: 16px;}
+.stateBtn li b{font-weight: normal;}
+/* 地图 */
+.map{height: 353px;position: relative;background: #fff;overflow: hidden;}
+.map .mapBtn{width: 100px;height: 24px;background-color: gainsboro;border: none;outline: none;font-size: 14px;border-radius: 13px;position: absolute;	bottom: 25px;z-index: 10;}
+.map .mapBtn:first-child{right: 50%;margin-right: 20px;}
+.map .mapBtn:first-child+button{left: 50%;margin-left: 20px;}
+.map .mapBtn:hover,.map .mapBtn.on{background-color: #1199D3;color: white;}
+.map .full{position: absolute;top: 10px;right: 10px;width: 52px;height: 52px;	z-index: 10;}
+#map_container{height: 100%;}
+/* 底部选项卡 */
+#tabbar{clear: both;margin-bottom: 10px;}
+#tabbar li{margin-top: 10px;text-align: center;line-height: 28px;width: 14%;float: left;background-color: #1199D3;color: white;font-size: 14px;cursor: pointer;}
+#tabbar li:first-child{border-radius: 14px 0 0 14px;}
+#tabbar li:last-child{border-radius: 0 14px 14px 0;}
+#tabbar li.current,#tabbar li:hover{background-color: #00436B;}
+/* 消息列表 */
+#msgList{width: 300px;height: 100%;position: absolute;right: -300px;top: 0;z-index: 100;padding: 60px 10px 10px 10px;background-color: #fff;}
+#msgList>img{position: absolute;right: 294px;top: 445px;width: 30px;height: 70px;z-index: 100;cursor: pointer;}
+#msgList .msg_title{height: 30px;text-align: center;line-height: 30px;color: white;background-color: #1199D3;font-weight: bold;font-size: 16px;}
+.msgList {color: #1199D3;height: 393px;border-bottom: 1px solid gainsboro; overflow-y: auto;overflow-x: hidden;}
+.msgList div {font-size: 16px;cursor: pointer;text-indent: 1em;line-height: 30px;}
+.msgList ul {display: none;padding-left: 18px;margin: 0;line-height: 30px;}
+.msgList ul li {font-size: 15px;cursor: pointer;padding-left: 8px;line-height: 30px;}
+.msgListDetail {box-sizing: border-box;padding-top: 10px;}
+.msgListDetail p {color: #1199D3;font-size: 16px;text-indent: 1em;color:red;}
+.msgListDetail p span {width: 240px;float: right;text-indent: 0;text-align: left;cursor: pointer;}
+#mask{display: none;width: 100%;height: 100%;background: rgba(0, 0, 0, 0.3);position: fixed;top: 0;left: 70px;z-index: 99;}
+/* 底部功能 */
+ul#tabMain{clear: both;width: 100%;padding-top: 10px;margin-bottom:0px;}
+#tabMain>li{display: none;border-radius: 10px;background: white;padding: 10px 15px;}
+#tabMain>li::after{content: '';display: block;clear: both;}
+#tabMain>li.current{display: block;}
+#tabMain>li h2.equiName{max-width:730px;font-size: 16px;font-weight: normal;margin: 0 0 5px 0;}
+/* 状态信息 */
+#tabMain>li:first-child{background: transparent;padding: 0;}
+.statusLeft{float: left;width: 60%;background: white;border-radius: 10px;padding: 10px 15px;}
+.statusLeft dl{margin-bottom: 0;padding-top: 5px;overflow: hidden;}
+.statusLeft dl.cooler{border-bottom: 1px solid #D9D9D9;}
+.statusLeft dl dt{font-weight: normal;border-left: 3px solid black;text-indent: 10px;line-height: 20px;}
+.statusLeft dl dd{width: 33%;height: 28px;float: left;line-height: 28px;}
+.statusLeft dl.cooler dd img{width: 24px;vertical-align: middle;margin: 0 2px;}
+.statusRight{float: left;width: 40%;padding-left: 10px;}
+.statusRight>div{background: white;border-radius: 10px;height: 154px;}
+.statusRight #chart1{margin-bottom: 10px;}
+/* 右侧图片 */
+.jx{float: right;width: 40%;}
+.jx img{width: 100%;}
+/* 机组控制 */
+.group{float: left;width: 20%;margin-left: 9%;}
+.switch{overflow: hidden;}
+.switch>div:nth-child(1) {float: left;font-size: 12px;}
+.switch>div:nth-child(2) {float: right;font-size: 12px;}
+#set_temp{border: 1px solid #D9D9D9;}
+.switchtab {padding: 5px 20px;border: 1px solid #407290;color: black;border-radius: 10px;cursor: pointer;font-size: 12px;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;}
+.switchtab.on {background: #1199D3;color: white !important;}
+.recent {width: 100%;border: 1px solid #D9D9D9;border-radius: 10px;padding: 5px;color: #074D73;min-height: 97px;margin-top: 10px;text-align: left;max-height: 97px;overflow: scroll;}
+.recent>div {line-height: 20px;font-size: 12px;}
+.sec {margin-top: 10%;}
+.switchall {text-align: center;}
+.switch .form-control {width: 98%;height: 30px;}
+.inswiech {width: 52%;}
+.inswh {width: 60%;}
+/* 参数设置 */
+.preference_table{width: 60%;float: left;}
+.preference_table table{width: 400px;margin: 10px auto 0;}
+.preference_table table th{text-align: right;}
+.preference_table table tr td:first-child{width: 50px;}
+.preference_table table td{text-align: right;line-height: 30px;padding: 0;font-size: 14px;}
+.preference_table select{width: 85%;display: inline-block;border: 1px solid #D9D9D9;height: 25px;padding: 2px 8px;line-height: 30px;}
+.myform_button{text-align: center;margin-top: 10px!important;}
+.myform_button button{width: 70px;height: 24px;font-size: 14px;background-color: #1199D3;border: none;outline: none;color: white;border-radius: 3px;margin: 0!important;padding: 0!important;}
+/* 报警设置 */
+.alarmtable{width: 60%;float: left;}
+.alarmtable table{margin: 0 auto;}
+#box_id_name{text-align: center!important;}
+.alarmtable table tr td:first-child{width: 150px;}
+.alarmtable table td{font-size: 14px;text-align: right;line-height: 40px;}
+#alarmPhone,#stripTime{width: 85%;display: inline-block;border: 1px solid #D9D9D9;height: 25px;padding: 2px 8px;}
+.alarmtable table div{display: inline-block;width: 67%;}
+.alarmtable table select{display: inline-block;width: 25%!important;border: 1px solid #D9D9D9;height: 25px;padding: 2px 8px;}
+.alarmtable table div input{width: 46%;display: inline-block;height: 25px;padding: 2px 8px;border: 1px solid #D9D9D9;}
+/*分组设置*/
+.grouptable{width: 60%;float: left;margin-top: 30px;}
+.grouptable>div{width: 500px;margin: 0 auto;}
+.grouptable>div::after{display: block;content: '';clear: both;}
+.grouptable table{width: 250px;float: left;}
+.grouptable table tr td{text-align: right;font-size: 14px;line-height: 30px;}
+.grouptable table tr td:first-child{width: 50px;}
+.grouptable table tr td>input{width: 93%;display: inline-block;border: 1px solid #D9D9D9;height: 25px;padding: 2px 8px;}
+.grouptable table tr td select{width: 93%;display: inline-block;border: 1px solid #D9D9D9;height: 25px;padding: 2px 8px;}
+.group_apply{float: right;width: 150px;}
+.group_apply>div{font-size: 14px;}
+.group_apply #sel_productTag{width: 150px;height: 36px;}
+.myform_button{clear: both;}
+/* 数据查询 */
+.timeGroup{overflow: hidden;}
+.timeGroup *{float: left;height: 25px;margin-right: 30px;}
+.timeGroup input{width: 180px;}
+.timeGroup button{width: 70px;height: 24px;padding: 0;background-color: #1199D3;border-color: #1199D3;}
+.dataTable{margin-top: 10px;}
+.dataTable .fixed-table-container{border: none;}
+.dataTable table{background-color: #fff;}
+.dataTable table thead tr th{height: 20px;background-color: #1199D3;}
+.dataTable table tr th .th-inner{font-size: 12px;color: white;font-weight: normal;height: 20px;line-height: 20px;padding: 0;text-align: center;}
+.dataTable table tr td{font-size: 12px;padding: 3px 5px!important;}
+.dataTable table tr{cursor: pointer;}
+.t_left{float: left;padding-top: 6px;width: 50%;}
+.t_left select{display: inline-block;padding: 0;height: 25px;border: 1px solid #D9D9D9;}
+.t_right{float: right;}
+.pagination {margin: 5px 0;margin-top: 6px;}
+.pagination>li>a, .pagination>li>span {padding: 2px 10px;}
+.search_table{margin-bottom: 5px;width: 38%;}
+.search_table .btn{padding: 2px 12px;}
+.timeGroup input{padding: 0 12px;}
+/*曲线查询*/
+.curve_chart {width: 100%;height: 164px;}

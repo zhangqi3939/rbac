@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="shortcut icon" href="../img/icon/lenglian.ico">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/bootstrap.min.css">
+  <link rel="stylesheet" href="../css/bootstrap-table.css">
+  <link rel="stylesheet" href="../css/bootstrap-multiselect.min.css">
+  <link rel="stylesheet" href="../css/full_map.css">
+  <script src="../publicJS/jquery-2.1.0.js"></script>
+  <script src="../publicJS/bootstrap.min.js"></script>
+  <script src="../publicJS/bootstrap-table.js"></script>
+  <script src="../publicJS/bootstrap-multiselect.min.js"></script>
+  <script src="../publicJS/tableExport.min.js"></script>
+  <script src="../publicJS/bootstrap-table-export.min.js"></script>
+  <script src="../publicJS/reqDomain.js"></script>
+  <script src="../plugs/date/WdatePicker.js"></script>
+  <script src="../plugs/layer/layer.js"></script>
+  <script src="js/assembly.js"></script>
+  <script src="js/function.js"></script>
+</head>
+<body>
+  <div id="header"></div>
+  <div id="nav"></div>
+  <div id="main">
+    <!-- 地图头部操作 -->
+    <div class="map_top_choice">
+      <select class="form-control" id="changeMap">
+        <option value="0">百度地图</option>
+        <option value="1">谷歌地图</option>
+      </select>
+      <select id="box_select_list"></select>
+      <input type="text" class="form-control Wdate" id="startTime"  onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm',minDate:'#F{$dp.$D(\'endTime\',{d:-3});}'});" readonly placeholder="请选择轨迹开始时间">
+      <input type="text" class="form-control Wdate" id="endTime" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm',maxDate:'#F{$dp.$D(\'startTime\',{d:3});}'});" readonly placeholder="请选择轨迹结束时间">
+      <button onclick="loadTrack();">轨迹查询</button>
+      <button onclick="playBack();">回放</button>
+      <div class="boxtochoice" onclick="drawFence();"><img src="../img/cjwl.jpg" style="margin-top:-2px;" /> 创建围栏</div>
+      <div class="boxtochoice" onclick="showFence();"><img src="../img/xswl.jpg" style="margin-top:-2px;" /> 显示围栏</div>
+    </div>
+    <!-- 地图 -->
+    <div id="map_container"></div>
+    <!-- 底部表格 -->
+    <div class="not_all">
+      <div class="tablemap_title">
+        <div class="tablemap_title_left">
+          <div class="map_circle">
+            <i style="background-color: #08557C;"></i>
+            <div class="all">全部：0000</div>
+          </div>
+          <div class="map_circle">
+            <i style="background-color: #00A484;"></i>
+            <div class="onLine">在线：0000</div>
+          </div>
+          <div class="map_circle">
+            <i style="background-color: #ba84f6;"></i>
+            <div class="outLine">休眠：0000</div>
+          </div>
+          <div class="map_circle">
+            <i style="background-color: #F24F6D;"></i>
+            <div class="alarm">报警：0000</div>
+          </div>
+        </div>
+        <div class="tablemap_title_right">
+          <div><img src="../img/nr.png" /></div>
+          <div><img src="../img/fd.png" /></div>
+          <div><img src="../img/sx.png" /></div>
+        </div>
+      </div>
+      <div class="maptable">
+        <table id="maptable"></table>
+      </div>
+    </div>
+    <!-- 围栏弹框 -->
+    <div style="display: none;" id="fenceInfoDiv">
+      <div class="row" style="margin:1em 2em;">
+        <form class="form-horizontal" id="fence_form">
+          <div class="form-group">
+            <label for="fence_name" class="col-xs-4 control-label">名称</label>
+            <div class="col-xs-6">
+              <input type="text" class="form-control" id="fence_name" name="fence_name">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="fence_name" class="col-xs-4 control-label">类型</label>
+            <div class="col-xs-6">
+              <select class="form-control" id="fence_category" name="fence_category">
+                <option value="circle">圆形围栏</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="fence_name" class="col-xs-4 control-label">经度</label>
+            <div class="col-xs-6">
+              <input type="text" class="form-control" id="fence_longitude" name="fence_longitude" readonly>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="fence_name" class="col-xs-4 control-label">纬度</label>
+            <div class="col-xs-6">
+              <input type="text" class="form-control" id="fence_latitude" name="fence_latitude" readonly>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="fence_name" class="col-xs-4 control-label">半径</label>
+            <div class="col-xs-6">
+              <input type="text" class="form-control" id="fence_radius" name="fence_radius" readonly>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="fence_name" class="col-xs-4 control-label"></label>
+            <div class="col-xs-6">
+              <button onclick="saveFence();return false;">保 存</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    <!-- 侧栏 -->
+    <div class="fullmap_right">
+      <div class="op_tablemap">
+        <img src="../img/ivo02.png" />
+        <img src="../img/ivop01.png" />
+        <img class="ov" src="../img/o.png" />
+      </div>
+      <div class="infomation_op op0" id="box_group_list">
+
+      </div>
+      <div class="infomation_op op1" id="scroll-1" style="display: none;">
+        <!-- <div class="op_top">
+          <img src="../img/jzxop.jpg" />
+          <div id="info_name"></div>
+        </div> -->
+        <!-- <div class="op_num">门状态：<span id="info_doorOpen"></span></div> -->
+        <div class="op_num_con">
+          <div class="op_bott">
+            <div>箱东：</div>
+            <div id="info_realName"></div>
+          </div>
+          <div class="op_bott">
+            <div>电话：</div>
+            <div id="info_tel"></div>
+          </div>
+          <div class="op_bott">
+            <div>设备ID：</div>
+            <div id="info_box_id"></div>
+          </div>
+          <div class="op_bott">
+            <div>位置：</div>
+            <div id="info_address"></div>
+          </div>
+        </div>
+        <div class="op_num">信息</div>
+        <div class="op_num_con ts_com">
+          <div>箱外温(℃)：<span id="info_gps_temp1"></span></div>
+          <div>箱中温(℃)：<span id="info_gps_temp2"></span></div>
+          <div>箱后温(℃)：<span id="info_gps_temp3"></span></div>
+          <!-- <div>冷机状态：<span id="info_gps_door1"></span></div> -->
+          <div>电瓶电压(v)：<span id="info_gps_voltage"></span></div>
+        </div>
+        <div class="op_num">报警</div>
+        <div class="alarm_op">无</div>
+      </div>
+    </div>
+  </div>
+  <script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=VsTbD0CSmlginFy4WoGOab78W5RMwZ7H"></script>
+  <script type="text/javascript" src="http://api.map.baidu.com/library/DrawingManager/1.4/src/DrawingManager_min.js"></script>
+  <script type="text/javascript" src="http://api.map.baidu.com/library/LuShu/1.2/src/LuShu_min.js"></script>
+  <script src="http://maps.google.cn/maps/api/js?v=3.20&region=cn&language=zh-CN&key=AIzaSyBvympyc9L86yaC2TWMb_RXzyc1UY51rOo"></script>
+  <script type="text/javascript" src="http://api.map.baidu.com/library/TextIconOverlay/1.2/src/TextIconOverlay_min.js"></script>
+  <script type="text/javascript" src="http://api.map.baidu.com/library/MarkerClusterer/1.2/src/MarkerClusterer_min.js"></script>
+  <script src="js/map1.js"></script>
+  <script src="js/full_map1.js"></script>
+  <script>
+    // 页面初始化
+    pageInit();
+    // 初始化头部
+    new Header('#header');
+    // 初始化导航
+    new Nav('#nav');
+    //初始化地图表格
+    getMapTable();
+    // 填充设备选择下拉菜单
+    box_select(); 
+    // 侧栏分组列表
+    box_group();
+    // 显示用户信息
+    showOwner();
+    // 地图初始化
+    window.full_map = 1;
+    initMap();
+    openTarget($("#box_select_list").val());
+  </script>
+</body>
+</html>

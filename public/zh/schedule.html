@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="shortcut icon" href="../img/icon/lenglian.ico">
+  <link rel="stylesheet" href="../css/bootstrap.min.css">
+  <link rel="stylesheet" href="../css/bootstrap-table.css">
+  <link rel="stylesheet" href="../font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="../css/bootstrap-multiselect.min.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../publicJS/jquery-2.1.0.js"></script>
+  <script src="../publicJS/bootstrap.min.js"></script>
+  <script src="../publicJS/bootstrap-table.js"></script>
+  <script src="../publicJS/tableExport.min.js"></script>
+  <script src="../publicJS/bootstrap-table-export.min.js"></script>
+  <script src="../publicJS/bootstrap-multiselect.min.js"></script>
+  <script src="../publicJS/reqDomain.js"></script>
+  <script src="../plugs/layer/layer.js"></script>
+  <script src="../plugs/date/WdatePicker.js"></script>
+  <script src="js/function.js"></script>
+  <script src="js/assembly.js"></script>
+  <style>
+    /* 页面效果 */
+    #main{background: white;}
+    .indexTable{position: relative;margin-top: 20px;}
+    /* .indexTable .columns.columns-right.btn-group.pull-right{position: absolute;top: -67px;right: 0;}
+    .indexTable table th{height: 24px;background-color: #1199D3;padding: 0;color: white;font-size: 14px;text-align: center;}
+    .indexTable table td{font-size: 14px;padding: 0!important;text-align: center;vertical-align: middle!important;}*/
+    .indexTable table td span{margin-right: 20px;} 
+    .list_group{margin: 0;border: none;}
+    .table-hover>tbody>tr:hover{background-color: white;}
+    .schedule{border: none;outline: none;color: white;padding: 2px 10px;border-radius: 12px;background-color: #1199D3;}
+    /* 弹框效果 */
+    .mask>div{width: 800px;height: 220px;position: absolute;top: 50%;left: 50%;margin: -110px 0 0 -400px;background-color: #fff;overflow: hidden;border: 1px solid #45C5F8;border-radius: 10px;}
+    .mask_table{width: 370px;margin: 35px auto;}
+    .mask_table td{text-align: right;font-size: 14px;}
+    .mask_table td>.form-control{border: 1px solid #D9D9D9;padding: 2px 8px;margin: 5px 0 5px 20px;width: 200px;resize: none;}
+    .mask_table td>input,.mask_table td select{height: 25px;}  
+    #name+div{float: left;margin-left: 20px;}
+  </style>
+</head>
+<body>
+    <div id="header"></div>
+    <div id="manageNav"></div>
+    <div id="main">
+    <!-- 面包屑 -->
+    <ol class="breadcrumb">
+      <li><a href="#">排班</a></li>
+      <li class="active">排班列表</li>
+    </ol>
+    <!-- 操作组 -->
+    <div id="operationGroup">
+      <b>查询周开始时间：</b>
+      <input type="text" id="startTime" class="op_input" onfocus="WdatePicker({ dateFmt:'yyyy-MM-dd'})" placeholder="请选择开始时间" autocomplete="off">
+      <span class="op_btn" onclick="scheduleList()" style="color:#1199D3;">查询</span>	
+    </div>
+    <!-- 表格 -->
+    <div class="indexTable">
+      <table id="indexTable">
+        <thead id="station"></thead>
+        <tbody id="workNam"></tbody>
+      </table>
+    </div>
+    <!-- 弹框 -->
+    <div class="mask"></div>
+  </div>
+  <script>
+  $(function(){
+    // 页面初始化
+    pageInit();
+    // 初始化头部
+    new Header('#header');
+    // 初始化管理导航
+    new ManageNav('#manageNav');
+    // 获取参与排班用户列表
+    userList();
+    // 获取班次列表
+    classList();
+    // 获取工位列表
+    stationList();
+    // 获取排班列表
+    scheduleList();
+  })
+</script>
+<script>
+  var tableRow = null;
+  var userArr = null;
+  var classArr = null;
+  var stationArr = null;
+  var scheduleData = {
+    id : null,
+    schedule_date: null,
+    class_id: null,
+    station_id: null,
+    remarks: null,
+  }
+  
+  // 页面初始化
+  function pageInit(){
+    tableRow = null;
+    userArr = null;
+    classArr = null;
+  }
+  // 参与排班用户列表
+  function userList(){
+    $.ajax({
+      async: false,
+      type: "POST",
+      url: reqDomain + "/schedule/user_listing",
+      xhrFields: {
+        withCredentials: true
+      },
+      success: function (data) {
+        if(data.code == '200'){
+          userArr = data.result;
+        }
+      }
+    });
+  }
+  // 班次列表
+  function classList(){
+    $.ajax({
+      async: false,
+      type: "POST",
+      url: reqDomain + "/schedule/class_listing",
+      xhrFields: {
+        withCredentials: true
+      },
+      success: function (data) {
+        if(data.code == '200'){
+          classArr = data.result;
+        }
+      }
+    });
+  }
+  // 工位列表
+  function stationList(){
+      $.ajax({
+        async: false,
+        type: "POST",
+        url: reqDomain + "/schedule/station_listing",
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function (data) {
+          if(data.code == '200'){
+            stationArr = data.result;
+          }
+        }
+      });
+    }
+  // 排班列表
+  function scheduleList(){
+    $.ajax({
+      async: false,
+      type: "POST",
+      url: reqDomain + "/schedule/schedule_listing",
+      xhrFields: {
+        withCredentials: true
+      },
+      data: {
+        start_date: $('#startTime').val()
+      },
+      success: function (data) {
+        if(data.code == '200'){
+          
+          createThead();
+          createTbody(data.result);
+        }
+      }
+    });
+  }
+  // 创建表头
+  function createThead(){
+    var str = '';
+    str += '<tr><th>日期</th>';
+    for(var i=0;i<stationArr.length;i++){
+      str += '<th id="'+stationArr[i].id+'">'+stationArr[i].name+'</th>';
+    }
+    str += '</tr>';
+    $('#station').html(str);
+    $("#indexTable").bootstrapTable('destroy').bootstrapTable({
+      sidePagination: "client",
+      height: document.getElementsByTagName('body')[0].scrollHeight-200,
+      toolbar: '#operationGroup',
+      showExport: true,
+      exportDataType: 'all',
+      clickToSelect: true,
+      search: true,
+      column:[]
+    });
+  }
+  // 创建表格主体
+  function createTbody(tbodyData){
+    var str = '';
+    for(var key in tbodyData){
+      str += '<tr><td>'+key+'</td>';
+      for(var i=0;i<stationArr.length;i++){
+        str += '<td class="station_'+stationArr[i].id+'">';
+        str += '<ul class="list_group">';
+        for(var j=0;j<classArr.length;j++){
+          str += '<li class="list-group-item">';
+          str += '<span class="class_'+classArr[j].id+'">'+classArr[j].name+'</span>';
+          str += '<button class="schedule">排班</button>'
+          str += '</li>';
+        }
+        str += '</ul>';
+        str += '</td>';
+      }
+      str += '</tr>';
+    }
+    $('#workNam').html(str);
+    for(var k in tbodyData){
+      for(var a=0;a<tbodyData[k].length;a++){
+//          console.log(k)
+        $('.schedule').each(function(){
+            console.log($(this).parents('td').attr('class').replace('station_','') == tbodyData[k][a].statin_id)
+          if($(this).parents('tr').find('td:eq(0)').text() == k
+          && $(this).parents('td').attr('class').replace('station_','') == tbodyData[k][a].station_id
+          && $(this).siblings('span').attr('class').replace('class_','') == tbodyData[k][a].class_id){
+              console.log(tbodyData[k][a])
+            $(this).text(tbodyData[k][a].real_name);
+            $(this).attr('id',tbodyData[k][a].user_id);
+            $(this).attr('data-remarks',tbodyData[k][a].remarks);
+          }
+        })
+      }
+    }
+  }
+  $('#indexTable').on('click','button',function(){
+    $('.mask').show();
+//    console.log($(this))
+    new Schedule($(this).text(),$(this).attr('id'),$(this).parents('tr').find('td:eq(0)').text(),$(this).siblings('span').attr('class').replace('class_',''),$(this).parents('td').attr('class').replace('station_',''),$(this).attr('data-remarks'));
+  })
+  // 排班弹框
+  function Schedule(realName,id,schedule_date,class_id,station_id,remarks){
+    this.realName = realName;
+    this.id = id || '';
+    this.schedule_date = schedule_date;
+    this.class_id = class_id;
+    this.station_id = station_id;
+    this.remarks = remarks || '';
+    scheduleData.id = this.id;
+    scheduleData.schedule_date = this.schedule_date;
+    scheduleData.class_id = this.class_id;
+    scheduleData.station_id = this.station_id;
+    scheduleData.remarks = this.remarks;
+    this.init();
+  }
+  Schedule.prototype.init = function(arg){
+    var div = document.createElement('div');
+    var str = '<div class="mask_title">排班<span class="close" onclick="closeMask()">×</span></div>';
+    str += '<div class="mask_main"><table class="mask_table"><tr><td>值班员工</td><td><select class="form-control" id="name">';
+    str += '<option value="">请选择一个员工</option>'
+    for(var i=0;i<userArr.length;i++){
+      if(this.real_mame == userArr[i].real_name){
+        str += '<option value="'+userArr[i].id+'" selected>'+userArr[i].real_name+'</option>'
+      }else{
+        str += '<option value="'+userArr[i].id+'">'+userArr[i].real_name+'</option>'
+      }
+    }
+    str += '</select></td></tr>';
+    str += '<tr><td>备注</td><td><input type="text" class="form-control" id="remarks" value="'+scheduleData.remarks+'" ></td></tr></table>';
+    str += '<div class="myform_button"><button type="button" class="btn btn-info" onclick="save()">保存</button></div></div>';
+    div.innerHTML = str;
+    document.getElementsByClassName('mask')[0].appendChild(div);
+    $('#name').multiselect("destroy").multiselect({
+        buttonWidth: '200px', 
+        includeSelectAllOption: true,
+        enableFiltering: true,
+        filterPlaceholder: '搜索',
+        filterBehavior: 'text', //根据value或者text过滤
+        enableFullValueFiltering: true, //能否全字匹配
+        enableCaseInsensitiveFiltering: true, //不区分大小写
+        selectAllNumber: false, //true显示allselect（6）,false显示allselect
+        selectAllName: 'select-all-name',
+        selectAllValue: 'select-all-value', //可以为strig或者数字
+        maxHeight: 100,
+      });
+  }
+  // 排班添加保存
+  function save(){
+    $.ajax({
+      type: "POST",
+      url: reqDomain + "/schedule/schedule_save",
+      data:{
+        id: scheduleData.id,
+        schedule_date: scheduleData.schedule_date,
+        user_id: $('.mask_table select').val(),
+        class_id: scheduleData.class_id,
+        station_id: scheduleData.station_id,
+        remarks: $('#remarks').val()
+      },
+      xhrFields: {
+        withCredentials: true
+      },
+      success: function (data) {
+        if(data.code == '200'){
+          layer.alert('排班添加成功！');
+          closeMask();
+          scheduleList();
+          var scheduleData = {
+            id : null,
+            schedule_date: null,
+            class_id: null,
+            station_id: null,
+            scheduleData: null
+          }
+        }
+      }
+    })
+  }
+  // 点击叉号
+  function closeMask(){
+    $('.mask').fadeOut(300);
+    $('.mask>div').remove();
+  }
+</script>
+</body>
+</html>

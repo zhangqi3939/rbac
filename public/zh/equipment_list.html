@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="shortcut icon" href="../img/icon/lenglian.ico">
+  <link rel="stylesheet" href="../css/bootstrap.min.css">
+  <link rel="stylesheet" href="../css/bootstrap-table.css">
+  <link rel="stylesheet" href="../css/bootstrap-multiselect.min.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../publicJS/jquery-2.1.0.js"></script>
+  <script src="../publicJS/bootstrap.min.js"></script>
+  <script src="../publicJS/bootstrap-table.js"></script>
+  <script src="../publicJS/bootstrap-multiselect.min.js"></script>
+  <script src="../publicJS/bootstrap-table-zh-CN.min.js?v=20191213"></script>
+  <script src="../publicJS/tableExport.min.js"></script>
+  <script src="../publicJS/bootstrap-table-export.min.js"></script>
+  <script src="../publicJS/reqDomain.js"></script>
+  <script src="../plugs/layer/layer.js"></script>
+  <script src="js/function.js"></script>
+  <script src="js/assembly.js"></script>
+  <style>
+    /* 页面效果 */
+    #main{background: white;}
+    .indexTable{position: relative;margin-top: 20px;}
+    .indexTable table tr.bg td{background-color: #e6e6e6;}
+    /* 弹框效果 */
+    .mask>div{width: 800px;height: 400px;position: absolute;top: 50%;left: 50%;margin: -200px 0 0 -400px;background-color: #fff;overflow: hidden;border: 1px solid #45C5F8;border-radius: 10px;}
+    .mask_table{width: 300px;margin: 30px auto;}
+    .mask_table td{font-size: 14px;line-height: 40px;padding: 5px 0;text-align: right;}
+    .mask_table .form-control{display: inline-block;border: 1px solid #D9D9D9;height: 25px;width: 95%;padding: 0 12px;}
+    .mask_table tr td:first-child{width: 120px;}
+    .mask_table tr td:first-child+td{width: 380px;}
+    .alarm .mask_main{position: relative;}
+    .alarm .mask_table{margin: 0;width: 500px;}
+    .alarm .mask_table td{line-height: 25px;}
+    .alarm .mask_table div{display: inline-block;width: 62%;}
+    .alarm .mask_table tr td:first-child+td {width: 380px;}
+    .alarm .mask_table select{display: inline-block;width: 30%;border: 1px solid #D9D9D9;height: 25px;padding: 2px 8px;}
+    .alarm .mask_table div input{width: 46%;display: inline-block;height: 25px;padding: 2px 8px;border: 1px solid #D9D9D9;}
+    .bod_group{position: absolute;top: 0;right: 0;width: 270px;height: 368px;padding: 60px 30px 40px;border-left: 1px solid #BBBBBB;}
+    .bod_group .algin{font-size: 14px;margin-bottom: 10px;}
+    #box_id_name{text-align: center;}
+    #group_list{width: 150px;height: 40px;}
+    .equi_table{margin-bottom: 60px;}
+  </style>
+</head>
+<body>
+  <div id="header"></div>
+  <div id="nav"></div>
+  <div id="main">
+    <!-- 面包屑 -->
+    <ol class="breadcrumb">
+      <li><a href="cold.html">首页</a></li>
+      <li><a href="#">设备</a></li>
+      <li class="active">设备列表</li>
+    </ol>
+    <!-- 操作组 -->
+    <div id="operationGroup">
+      <span class="op_btn" onclick="changeInfo()">修改信息</span>
+      <span class="op_btn" onclick="addEqui()">设备添加</span>
+      <span class="op_btn" onclick="alarmsetting()">报警设置</span>
+      <select class="op_sel" id="group_list"></select>
+    </div>
+    <!-- 表格 -->
+    <div class="indexTable">
+      <table id="indexTable" data-toggle="table"></table>
+    </div>
+    <!-- 弹框 -->
+    <div class="mask"></div>
+  </div>
+  <script>
+    $(function(){
+    	$('#home').prop('href',window.localStorage.getItem('homePage')+'.html')
+      // 初始化头部
+      new Header('#header');
+      // 初始化导航
+      new Nav('#nav');
+      // 分组列表初始化
+      group_list();
+      // 设备列表
+      boxList();
+      $("#group_list").change(function(){
+        var list = [];
+        if($(this).val() == ''){
+          $('#indexTable').bootstrapTable('load',box_list);
+        }else{
+          for(var i=0;i<box_list.length;i++){
+            if(box_list[i].group_id == $(this).val()){
+              list.push(box_list[i])
+            }
+          }
+          $('#indexTable').bootstrapTable('load',list);
+        }
+      })
+    })
+  </script>
+  <script>
+    var tableRow = null;
+    var box_list = [];
+    //分组列表
+    function group_list() {
+      $.ajax({
+        async: false,
+        cache: false,
+        type: 'POST',
+        url: reqDomain + "/device/group_list", 
+        data: {},
+        dataType: "json",
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function(data) {
+          if(data.code == 200) {            
+            var html = "<option value=''>所有分组</option>";
+            for(var i = 0; i < data.result.length; i++) {
+              html += "<option value='" + data.result[i].group_id + "'>" + data.result[i].name + "</option>"
+            }
+            $("#group_list").html(html);
+            $("#group_list").multiselect({
+              buttonWidth: '200px',
+              includeSelectAllOption: true,
+              enableFiltering: true,
+              filterPlaceholder: '搜索',
+              maxHeight: 300,
+            });            
+          }
+        }
+      });
+    }
+    // 设备列表表格
+    function boxList(){
+      $.ajax({
+        type: 'POST',
+        url: reqDomain + "/device/box_list", 
+        data: {
+          "keyword": $('#keyword').val(),
+          "groupID": $('#group_list').val()
+        },
+        dataType: "json",
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function (data) {
+          if(data.code == 200) {
+            box_list = data.result
+            for(var i = 0; i < data.result.length; i++) {
+              if(data.result[i].box_category == 1) {
+                data.result[i].box_category = "接冷机可控制";
+              } else if(data.result[i].box_category == 2) {
+                data.result[i].box_category = "接冷机不可控制";
+              } else if(data.result[i].box_category == 3) {
+                data.result[i].box_category = "不接冷机";
+              }
+            }
+            $('#indexTable').bootstrapTable('load',data.result);
+            tableRow = null;
+          }
+        }
+      });
+    }
+    //表格
+    $('#indexTable').bootstrapTable({
+      sortable: true,
+      height: document.getElementsByTagName('body')[0].scrollHeight-200,
+      sortOrder: 'id desc',
+      toolbar: '#operationGroup',
+      clickToSelect: true,
+      pagination: true,
+      search: true,
+	    searchTimeOut: 700,
+      paginationLoop: true,
+      pageNumber: 1,
+      pageSize: 15,
+      showExport: true,
+      exportDataType: 'all',
+      columns: [{
+        title: '序号',
+        formatter: function(value, row, index) {
+          return index + 1;
+        }
+      }, {
+        field: 'name',
+        title: '名称',
+        valign: 'middle'
+      }, {
+        field: 'box_id',
+        title: '设备ID',
+        valign: 'middle'
+      }, {
+        field: 'model_number',
+        title: '箱体型号',
+        valign: 'middle'
+      }, {
+        field: 'category',
+        title: '箱体分类',
+        valign: 'middle',
+        formatter:function(value){
+          if(value == '01'){
+            return '冷藏箱'
+          }else if(value == '02'){
+            return '保温箱'
+          }else{
+            return '保温车'
+          }
+        }
+      }, {
+        field: 'box_category',
+        title: '设备类型',
+        valign: 'middle',
+      }, {
+        field: 'cooler_code',
+        title: '冷机编码',
+        valign: 'middle'
+      }, {
+        field: 'outDate',
+        title: '到期日期',
+        valign: 'middle'
+      }]
+    });
+    $("#indexTable").on('click-row.bs.table', function(e, row, element) {
+      $(element).addClass('bg').siblings().removeClass('bg');
+      tableRow = row;
+    })
+    // 修改信息
+    function changeInfo(){
+      if(tableRow == null){
+        layer.alert("请选择一个设备");
+      }else{
+        $('.mask').show();
+        new InfoAlert(tableRow);
+      }
+    }
+    function InfoAlert(opt){
+      this.box_id = opt.box_id;
+      this.name = opt.name;
+      this.model_number = opt.model_number; //箱体编号
+      this.category = opt.category; //箱体分类
+      this.cooler_code = opt.cooler_code; //冷机编码
+      this.init();
+    }
+    InfoAlert.prototype.init = function(){
+      console.log(this.category)
+      var div = document.createElement('div');
+      var str = '<div class="mask_title">设备修改<span class="close" onclick="closeMask()">&times;</span></div>';
+      str += '<div class="mask_main"><table class="mask_table">';
+      str += '<tr><td>设备ID：</td><td><input type="text" class="form-control" id="box_id" disabled="disabled" value="'+this.box_id+'"></td></tr>';
+      str += '<tr><td>设备名称：</td><td><input type="text" class="form-control" id="box_name" value="'+this.name+'"></td></tr>';
+      str += '<tr><td>箱体型号：</td><td><input type="text" class="form-control" id="box_model_number" value="'+this.model_number+'"></td></tr>';
+      str += '<tr><td>箱体分类：</td><td><select class="form-control" id="box_category">'+
+			      	'<option value="01">冷藏箱</option>'+
+			      	'<option value="02">保温箱</option>'+
+			      	'<option value="03">保温车</option>'+
+			      	'</select></td></tr>';
+      str += ' <tr><td>冷机编码：</td><td><input type="text" class="form-control" id="box_cooler_code" value="'+this.cooler_code+'"></td></tr>';    
+      str += ' </table><div class="myform_button"><button type="button" class="btn btn-info" onclick="changeEqui()">保存</button></div></div>';   
+      div.innerHTML = str;
+      document.getElementsByClassName('mask')[0].appendChild(div);
+      $('#box_category').val(this.category)
+    }
+    // 保存设备修改
+    function changeEqui(){
+      $.ajax({
+        async: false,
+        cache: false,
+        type: 'POST',
+        url: reqDomain + "/device/box_save", // 请求的action路径
+        data: {
+          "box_id": $('#box_id').val(),
+          "name": $('#box_name').val(),
+          "model_number": $('#box_model_number').val(),
+          "category": $('#box_category').val(),
+          "cooler_code": $('#box_cooler_code').val()
+        },
+        dataType: "json",
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function(data) {
+          if(data.code == 200) {
+            layer.alert("修改成功");
+            closeMask();
+            boxList();
+            tableRow = null;
+          }
+        }
+      });
+    }
+    // 添加设备
+    function addEqui(){
+      $('.mask').show();
+      new AddEqui();
+    }
+    function AddEqui(){
+      this.init();
+    }
+    AddEqui.prototype.init = function(){
+      var div = document.createElement('div');
+      var str = '<div class="mask_title">设备添加<span class="close" onclick="closeMask()">&times;</span></div>';
+      str += '<div class="mask_main"><table class="mask_table">';
+      str += '<tr><td>设备ID：</td><td><input type="text" class="form-control" id="box_id"></td></tr>';
+      str += '<tr><td>设备名称：</td><td><input type="text" class="form-control" id="box_name"></td></tr>';
+      str += '<tr><td>箱体型号：</td><td><input type="text" class="form-control" id="box_model_number"></td></tr>';
+      str += '<tr><td>箱体分类：</td><td><select class="form-control" id="box_category">'+
+      				'<option value="01">冷藏箱</option>'+
+			      	'<option value="02">保温箱</option>'+
+			      	'<option value="03">保温车</option>'+
+      				'</select></td></tr>';
+      str += ' <tr><td>冷机编码：</td><td><input type="text" class="form-control" id="box_cooler_code"></td></tr>';    
+      str += ' </table><div class="myform_button"><button type="button" class="btn btn-info" onclick="add()">保存</button></div></div>';   
+      div.innerHTML = str;
+      document.getElementsByClassName('mask')[0].appendChild(div);
+    }
+    //保存添加设备
+    function add(){
+      var box_id = $('#box_id').val();
+      var name = $('#box_name').val();
+      if(box_id&&name){
+        $.ajax({
+          async: false,
+          cache: false,
+          type: 'POST',
+          url: reqDomain + "/device/box_save",
+          data: {
+            "box_id": box_id,
+            "name": name,
+            "model_number": $('#box_model_number').val(),
+            "category": $('#box_category').val(),
+            "cooler_code": $('#box_cooler_code').val()
+          },
+          dataType: "json",
+          xhrFields: {
+            withCredentials: true
+          },
+          success: function(data) {
+            if(data.code == 200) {
+              layer.alert('添加成功');
+              closeMask();
+              boxList();
+            }
+          }
+        });
+      }else{
+        layer.alert('设备ID或设备名称不能为空');
+        return false;
+      }
+    }
+    // 报警设置
+    function alarmsetting(){
+      if(!tableRow){
+        layer.alert("请选择一个设备");
+      }else{
+        $('.mask').show();
+        $.ajax({
+					async: false,
+					cache: false,
+					type: 'POST',
+					url: reqDomain + "/alarm/alarm_setting",
+					data: {
+						"box_id": tableRow.box_id
+					},
+					dataType: "json",
+					xhrFields: {
+						withCredentials: true
+					},
+					success: function(data) {
+						if(data.code == 200) {
+              new Alarmsetting(data.result,tableRow);
+						}
+					}
+				})
+      }
+      
+    }
+    function Alarmsetting(opt,tableRow){
+      this.box_id = tableRow.box_id;
+      this.name = tableRow.name;
+      this.data = opt;
+      this.init();
+    }
+    Alarmsetting.prototype.init = function(){
+      var div = document.createElement('div');
+      div.className = 'alarm';
+      var str = ' <div class="mask_title">报警设置修改<span class="close" onclick="closeMask()">×</span></div>';
+      str += '<div class="mask_main"><table class="mask_table">';
+      str += '<tr><td>集装箱</td><td id="box_id_name"></td></tr>';
+      str += '<tr><td>报警电话</td><td><input type="text" class="form-control" placeholder="报警电话" style="width: 93%;" id="alarmPhone" pattern="^1[35789][0-9]{9}(,1[35789][0-9]{9})*$ " onblur="pho(this.value)" onkeyup="this.value=this.value.replace(/[^\-?\d,]/g,"")"></td></tr>';
+      str += '<tr><td>发送间隔（分）</td><td><input type="text" class="form-control" placeholder="发送间隔" style="width: 93%;" id="stripTime" value="30" onkeyup="if(this.value.length==1){this.value=this.value.replace(/[^1-9]/g,"")}else{this.value=this.value.replace(/\D/g,"")}" onafterpaste="if(this.value.length==1){this.value=this.value.replace(/[^1-9]/g,"")}else{this.value=this.value.replace(/\D/g,"")}"></td></tr>';   
+      str += '<tr><td class="box_checkbox">温度1（℃）</td><td class="box_in"><select class="form-control" id="t1On"><option value="0">不启用</option><option value="1">启用上下限</option><option value="2">随目标温度</option></select><div class="boxdouble"><input type="text" onkeyup="this.value=this.value.replace(/[^\-?\d.]/g,"")" class="form-control text01" disabled="disabled" placeholder="上限" id="t1High"><input type="text" onkeyup="this.value=this.value.replace(/[^\-?\d.]/g,"")" class="form-control text02" disabled="disabled" placeholder="下限" id="t1Low"></div></tr>';
+      str += '<tr><td class="box_checkbox">温度2（℃）</td><td class="box_in"><select class="form-control" id="t2On"><option value="0">不启用</option><option value="1">启用上下限</option><option value="2">随目标温度</option></select><div class="boxdouble"><input type="text" onkeyup="this.value=this.value.replace(/[^\-?\d.]/g,"")" class="form-control text01" disabled="disabled" placeholder="上限" id="t2High"><input type="text" onkeyup="this.value=this.value.replace(/[^\-?\d.]/g,"")" class="form-control text02" disabled="disabled" placeholder="下限" id="t2Low"></div></td></tr>';
+      str += '<tr><td class="box_checkbox">温度3（℃）</td><td class="box_in"><select class="form-control" id="t3On"><option value="0">不启用</option><option value="1">启用上下限</option><option value="2">随目标温度</option></select><div class="boxdouble"><input type="text" onkeyup="this.value=this.value.replace(/[^\-?\d.]/g,"")" class="form-control text01" disabled="disabled" placeholder="上限" id="t3High"><input type="text" onkeyup="this.value=this.value.replace(/[^\-?\d.]/g,"")" class="form-control text02" disabled="disabled" placeholder="下限" id="t3Low"></div></td></tr>';
+      str += '<tr><td class="box_checkbox" id="alarmsetting_text7">湿度（%）</td><td class="box_in"><select class="form-control" id="h1On"><option value="0" id="alarmsetting_text7_0">不启用</option><option value="1" id="alarmsetting_text7_1">启用上下限</option></select><div class="boxdouble"><input type="text" onkeyup="this.value=this.value.replace(/[^\-?\d.]/g,"")" class="form-control text01" disabled="disabled" placeholder="上限" id="h1High"><input type="text" onkeyup="this.value=this.value.replace(/[^\-?\d.]/g,"")" class="form-control text02" disabled="disabled" placeholder="下限" id="h1Low"></div></td></tr>';
+      str += '<tr><td class="box_checkbox" id="alarmsetting_text9">电压（V）</td><td class="box_in"><select class="form-control" id="v1On"><option value="0" id="alarmsetting_text9_0">不启用</option><option value="1" id="alarmsetting_text9_1">启用上下限</option></select><div class="boxdouble"><input type="text" onkeyup="this.value=this.value.replace(/[^\-?\d.]/g,"")" class="form-control text01" disabled="disabled" placeholder="上限" id="v1High"><input type="text" onkeyup="this.value=this.value.replace(/[^\-?\d.]/g,"")" class="form-control text02" disabled="disabled" placeholder="下限" id="v1Low"></div></td></tr>';
+      str += '</table><div class="myform_button"><button type="button" class="btn btn-info" style="margin-right:4%" onclick="alarmSave()">保存</button></div><div class="bod_group" id="scroll-1"><div class="algin">将报警设置应用到：</div><select id="sel_productTag" multiple></select></div></div>';
+      div.innerHTML = str;
+      document.getElementsByClassName('mask')[0].appendChild(div);
+      //报警设置
+      $(".box_in select").bind("change", function() {
+        var datatype = $(this).val();
+        if(datatype == 0) {
+          $(this).next(".boxdouble").find("input").attr("disabled", "disabled").val('');
+          $(this).next(".boxdouble").find(".text01").attr("placeholder", "上限");
+          $(this).next(".boxdouble").find(".text02").attr("placeholder", "下限");
+        }
+        if(datatype == 1) {
+          $(this).next(".boxdouble").find("input").removeAttr("disabled", "disabled");
+          $(this).next(".boxdouble").find(".text01").attr("placeholder", "上限").val('');
+          $(this).next(".boxdouble").find(".text02").attr("placeholder", "下限").val('');
+        }
+        if(datatype == 2) {
+          $(this).next(".boxdouble").find(".text01").removeAttr("disabled", "disabled");
+          $(this).next(".boxdouble").find(".text01").attr("placeholder", "温差").val('');
+          $(this).next(".boxdouble").find(".text02").attr("disabled", "disabled").val('');
+        }
+      });
+      //报警参数输入验证
+      $('#t1High').blur(function(){
+        var dataType = $(this).parents('.box_in').find('select').val();
+        if(isNaN(+$(this).val())){
+          layer.alert('输入内容不合法！');
+        }else if(dataType==1&&$(this).val()==''){
+          layer.alert('请输入箱外温度上限！');
+        }else if(dataType==1&&+$(this).val()>40){
+          layer.alert('箱外温度上限不能大于40！');
+        }else if(dataType==2&&$(this).val()==''){
+          layer.alert('请输入箱外温度温差！');
+        }else if(dataType==2&&(+$(this).val()>10||+$(this).val()<0)){
+          layer.alert('箱外温度温差必须在0到10之间！');
+        }
+      })
+      $('#t1Low').blur(function(){
+        var dataType = $(this).parents('.box_in').find('select').val();
+        if(isNaN(+$(this).val())){
+          layer.alert('输入内容不合法！');
+        }else if($(this).val()==''){
+          layer.alert('请输入箱外温度下限！');
+        }else if(+$(this).val()<-40){
+          layer.alert('箱外温度下限不能小于-40！');
+        }else if(+$(this).val()>=+$('#t1High').val()){
+          layer.alert('箱外温度下限必须低于上限！');
+        }
+      })
+      $('#t2High').blur(function(){
+        var dataType = $(this).parents('.box_in').find('select').val();
+        if(isNaN(+$(this).val())){
+          layer.alert('输入内容不合法！');
+        }else if(dataType==1&&$(this).val()==''){
+          layer.alert('请输入箱内中部温度上限！');
+        }else if(dataType==1&&+$(this).val()>40){
+          layer.alert('箱内中部温度上限不能大于40！');
+        }else if(dataType==2&&$(this).val()==''){
+          layer.alert('请输入箱内中部温度温差！');
+        }else if(dataType==2&&(+$(this).val()>10||+$(this).val()<0)){
+          layer.alert('箱内中部温度温差必须在0到10之间！');
+        }
+      })
+      $('#t2Low').blur(function(){
+        var dataType = $(this).parents('.box_in').find('select').val();
+        if(isNaN(+$(this).val())){
+          layer.alert('输入内容不合法！');
+        }else if($(this).val()==''){
+          layer.alert('请输入箱内中部温度下限！');
+        }else if(+$(this).val()<-40){
+          layer.alert('箱内中部温度下限不能小于-40！');
+        }else if(+$(this).val()>=+$('#t2High').val()){
+          layer.alert('箱内中部温度下限必须低于上限！');
+        }
+      })
+      $('#t3High').blur(function(){
+        var dataType = $(this).parents('.box_in').find('select').val();
+        if(isNaN(+$(this).val())){
+          layer.alert('输入内容不合法！');
+        }else if(dataType==1&&$(this).val()==''){
+          layer.alert('请输入箱内后部温度上限！');
+        }else if(dataType==1&&+$(this).val()>40){
+          layer.alert('箱内后部温度上限不能大于40！');
+        }else if(dataType==2&&$(this).val()==''){
+          layer.alert('请输入箱内后部温度温差！');
+        }else if(dataType==2&&(+$(this).val()>10||+$(this).val()<0)){
+          layer.alert('箱内后部温度温差必须在0到10之间！');
+        }
+      })
+      $('#t3Low').blur(function(){
+        var dataType = $(this).parents('.box_in').find('select').val();
+        if(isNaN(+$(this).val())){
+          layer.alert('输入内容不合法！');
+        }else if($(this).val()==''){
+          layer.alert('请输入箱内后部温度下限！');
+        }else if(+$(this).val()<-40){
+          layer.alert('箱内后部温度下限不能小于-40！');
+        }else if(+$(this).val()>=+$('#t3High').val()){
+          layer.alert('箱内后部温度下限必须低于上限！');
+        }
+      })
+      $('#h1High').blur(function(){
+        var dataType = $(this).parents('.box_in').find('select').val();
+        if(isNaN(+$(this).val())){
+          layer.alert('输入内容不合法！');
+        }else if(dataType==1&&$(this).val()==''){
+          layer.alert('请输入湿度上限！');
+        }else if(dataType==1&&+$(this).val()>100){
+          layer.alert('湿度上限不能大于100！');
+        }
+      })
+      $('#h1Low').blur(function(){
+        var dataType = $(this).parents('.box_in').find('select').val();
+        if(isNaN(+$(this).val())){
+          layer.alert('输入内容不合法！');
+        }else if($(this).val()==''){
+          layer.alert('请输入湿度下限！');
+        }else if(+$(this).val()<0){
+          layer.alert('湿度下限不能小于0！');
+        }else if(+$(this).val()>=+$('#h1High').val()){
+          layer.alert('湿度下限必须低于上限！');
+        }
+      })
+      $('#v1High').blur(function(){
+        var dataType = $(this).parents('.box_in').find('select').val();
+        if(isNaN(+$(this).val())){
+          layer.alert('输入内容不合法！');
+        }else if(dataType==1&&$(this).val()==''){
+          layer.alert('请输入电瓶电压上限！');
+        }else if(dataType==1&&+$(this).val()>20){
+          layer.alert('电瓶电压上限不能大于20！');
+        }
+      })
+      $('#v1Low').blur(function(){
+        var dataType = $(this).parents('.box_in').find('select').val();
+        if(isNaN(+$(this).val())){
+          layer.alert('输入内容不合法！');
+        }else if($(this).val()==''){
+          layer.alert('请输入电瓶电压下限！');
+        }else if(+$(this).val()<8){
+          layer.alert('电瓶电压下限不能小于8！');
+        }else if(+$(this).val()>=+$('#v1High').val()){
+          layer.alert('电瓶电压下限必须低于上限！');
+        }
+      })
+    
+      box_list_alarm();
+      $("#box_id_name").html("设备名称：" + this.name + " 设备号：" + this.box_id);
+      if(this.data == null){
+        $("#alarmPhone").val("");
+        $("#stripTime").val("30");
+        $("#t1On").val(0);
+        $("#t2On").val(0);
+        $("#t3On").val(0);
+        $("#h1On").val(0);
+        $("#o1On").val(0);
+        $("#v1On").val(0);
+        $("#t1High").val("");
+        $("#t2High").val("");
+        $("#t3High").val("");
+        $("#h1High").val("");
+        $("#o1High").val("");
+        $("#v1High").val("");
+        $("#t1Low").val("");
+        $("#t2Low").val("");
+        $("#t3Low").val("");
+        $("#h1Low").val("");
+        $("#o1Low").val("");
+        $("#v1Low").val("");
+      }else{
+        $("#alarmPhone").val(this.data.alarm_phone);
+        $("#stripTime").val(this.data.strip_time / 60);
+        $("#t1On").val(this.data.t1_on);
+        if(this.data.t1_on == 0) {
+          $("#t1High").attr("disabled", "disabled");
+          $("#t1Low").attr("disabled", "disabled");
+        } else if(this.data.t1_on == 1) {
+          $("#t1High").removeAttr("disabled", "disabled");
+          $("#t1High").attr("placeholder", "上限");
+          $("#t1Low").removeAttr("disabled", "disabled");
+        } else if(this.data.t1_on == 2) {
+          $("#t1High").removeAttr("disabled", "disabled");
+          $("#t1High").attr("placeholder", "温差");
+          $("#t1Low").attr("disabled", "disabled");
+        }
+        $("#t2On").val(this.data.t2_on);
+        if(this.data.t2_on == 0) {
+          $("#t2High").attr("disabled", "disabled");
+          $("#t2Low").attr("disabled", "disabled");
+        } else if(this.data.t2_on == 1) {
+          $("#t2High").removeAttr("disabled", "disabled");
+          $("#t2High").attr("placeholder", "上限");
+          $("#t2Low").removeAttr("disabled", "disabled");
+        } else if(this.data.t2_on == 2) {
+          $("#t2High").removeAttr("disabled", "disabled");
+          $("#t2High").attr("placeholder", "温差");
+          $("#t2Low").attr("disabled", "disabled");
+        }
+        $("#t3On").val(this.data.t3_on);
+        if(this.data.t3_on == 0) {
+          $("#t3High").attr("disabled", "disabled");
+          $("#t3Low").attr("disabled", "disabled");
+        } else if(this.data.t3_on == 1) {
+          $("#t3High").removeAttr("disabled", "disabled");
+          $("#t3High").attr("placeholder", "上限");
+          $("#t3Low").removeAttr("disabled", "disabled");
+        } else if(this.data.t3_on == 2) {
+          $("#t3High").removeAttr("disabled", "disabled");
+          $("#t3High").attr("placeholder", "温差");
+          $("#t3Low").attr("disabled", "disabled");
+        }
+        $("#h1On").val(this.data.h1_on);
+        if(this.data.h1_on == 0) {
+          $("#h1High").attr("disabled", "disabled");
+          $("#h1Low").attr("disabled", "disabled");
+        } else if(this.data.h1On == 1) {
+          $("#h1High").removeAttr("disabled", "disabled");
+          $("#h1Low").removeAttr("disabled", "disabled");
+        }
+        $("#o1On").val(this.data.o1_on);
+        if(this.data.o1_on == 0) {
+          $("#o1High").attr("disabled", "disabled");
+          $("#o1Low").attr("disabled", "disabled");
+        } else if(this.data.o1_on == 1) {
+          $("#o1High").removeAttr("disabled", "disabled");
+          $("#o1Low").removeAttr("disabled", "disabled");
+        }
+        $("#v1On").val(this.data.v1_on);
+        if(this.data.v1_on == 0) {
+          $("#v1High").attr("disabled", "disabled");
+          $("#v1Low").attr("disabled", "disabled");
+        } else if(this.data.v1_on == 1) {
+          $("#v1High").removeAttr("disabled", "disabled");
+          $("#v1Low").removeAttr("disabled", "disabled");
+        }
+        $("#t1High").val(this.data.t1_high);
+        $("#t2High").val(this.data.t2_high);
+        $("#t3High").val(this.data.t3_high);
+        $("#h1High").val(this.data.h1_high);
+        $("#o1High").val(this.data.o1_high);
+        $("#v1High").val(this.data.v1_high);
+        $("#t1Low").val(this.data.t1_low);
+        $("#t2Low").val(this.data.t2_low);
+        $("#t3Low").val(this.data.t3_low);
+        $("#h1Low").val(this.data.h1_low);
+        $("#o1Low").val(this.data.o1_low);
+        $("#v1Low").val(this.data.v1_low);
+      }
+    }
+    // 报警保存
+    function alarmSave(){
+      var box_id = $('#sel_productTag').val();
+      if(box_id == '' || box_id == null){
+          layer.alert('请选择你要设置报警的设备！');
+          return false;
+      }
+      var alarmPhone = $("#alarmPhone").val();
+      var stripTime = $("#stripTime").val() * 60;
+      var t1On = $("#t1On").find("option:selected").val();
+      var t2On = $("#t2On").find("option:selected").val();
+      var t3On = $("#t3On").find("option:selected").val();
+      var h1On = $("#h1On").find("option:selected").val();
+      var o1On = $("#o1On").find("option:selected").val();
+      var v1On = $("#v1On").find("option:selected").val();
+      var t1High = $("#t1High").val();
+      var t2High = $("#t2High").val();
+      var t3High = $("#t3High").val();
+      var h1High = $("#h1High").val();
+      var o1High = $("#o1High").val();
+      var v1High = $("#v1High").val();
+      var t1Low = $("#t1Low").val();
+      var t2Low = $("#t2Low").val();
+      var t3Low = $("#t3Low").val();
+      var h1Low = $("#h1Low").val();
+      var o1Low = $("#o1Low").val();
+      var v1Low = $("#v1Low").val();
+      $.ajax({
+        async: false,
+        cache: false,
+        type: 'POST',
+        url: reqDomain + "/alarm/alarm_save", 
+        data: {
+          "box_id": box_id,
+          "alarmPhone": alarmPhone,
+          "stripTime": stripTime,
+          "t1On": t1On,
+          "t2On": t2On,
+          "t3On": t3On,
+          "h1On": h1On,
+          "o1On": o1On,
+          "v1On": v1On,
+          "t1High": t1High,
+          "t2High": t2High,
+          "t3High": t3High,
+          "h1High": h1High,
+          "o1High": o1High,
+          "v1High": v1High,
+          "t1Low": t1Low,
+          "t2Low": t2Low,
+          "t3Low": t3Low,
+          "h1Low": h1Low,
+          "o1Low": o1Low,
+          "v1Low": v1Low
+        },
+        dataType: "json",
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function(data) {
+          if(data.code == 200) {
+            layer.alert('保存成功！')
+            closeMask();
+            tableRow = null;
+          }
+        }
+      });
+    }
+    //设备列表-报警信息
+    function box_list_alarm() {
+      $.ajax({
+        async: false,
+        cache: false,
+        type: 'POST',
+        url: reqDomain + "/device/box_list", 
+        data: {},
+        dataType: "json",
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function(data) {
+          if(data.code == 200) {
+            var boxhtml = "";
+            for(var i = 0; i < data.result.length; i++) {
+              if(data.result[i].name == null) {
+                name = data.result[i].box_id;
+              } else {
+                name = data.result[i].name;
+              }
+              boxhtml += "<option value='" + data.result[i].box_id + "'>" + name + "</option>";
+            };
+            $("#sel_productTag").html(boxhtml);
+            $("#sel_productTag").multiselect({
+              buttonWidth: '200px',
+              includeSelectAllOption: true,
+              enableFiltering: true,
+              maxHeight: 200,
+              selectAllText: '全选',
+              nonSelectedText: '最少选一个设备',
+              numberDisplayed: 2,
+              filterPlaceholder: '搜索',
+            });
+          }
+        }
+      });
+    }
+    // 点击叉号
+    function closeMask(){
+      $('.mask').fadeOut(300);
+      $('.mask>div').remove();
+    }
+  </script>
+</body>
+</html>

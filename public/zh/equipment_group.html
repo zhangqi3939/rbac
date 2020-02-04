@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="shortcut icon" href="../img/icon/lenglian.ico">
+  <link rel="stylesheet" href="../css/bootstrap.min.css">
+  <link rel="stylesheet" href="../css/bootstrap-table.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../publicJS/jquery-2.1.0.js"></script>
+  <script src="../publicJS/bootstrap.min.js"></script>
+  <script src="../publicJS/bootstrap-table.js"></script>
+  <script src="../publicJS/bootstrap-table-zh-CN.min.js?v=20191213"></script>
+  <script src="../publicJS/tableExport.min.js?v=20191213"></script>
+  <script src="../publicJS/bootstrap-table-export.min.js?v=20191213"></script>
+  <script src="../publicJS/reqDomain.js"></script>
+  <script src="../plugs/layer/layer.js"></script>
+  <script src="js/function.js"></script>
+  <script src="js/assembly.js"></script>
+  <style>
+    /* 页面效果 */
+    #main{background: white;}
+    .indexTable{position: relative;margin-top: 20px;}
+    .indexTable table tr.bg td{background-color: #e6e6e6;} 
+    /* 弹框效果 */
+    .mask>div{width: 800px;height: 300px;position: absolute;top: 50%;left: 50%;margin: -150px 0 0 -400px;background-color: #fff;overflow: hidden;border: 1px solid #45C5F8;border-radius: 10px;}
+    .mask_table{width: 370px;margin: 35px auto;}
+    .mask_table td{text-align: right;font-size: 14px;}
+    .mask_table td .form-control{border: 1px solid #D9D9D9;padding: 2px 8px;margin: 5px 0 5px 20px;width: 200px;resize: none;}
+    .mask_table td input{height: 25px;}
+    .mask_table tr td:first-child{width: 100px;vertical-align: middle;}
+    .mask .maintain{width: 1000px;height: 460px;margin: -230px 0 0 -500px;}
+    .maintain div[class^='ma_']{float: left;height: 370px;}
+    .ma_left, .ma_right {width: 266px;}
+    .ma_left {margin-left: 80px;}
+    .ma_center{width: 90px;position: relative;height: 270px;}
+    .ma_center>i{position: absolute;left: 30px;cursor: pointer;width: 30px;text-align: center;height: 30px;line-height: 30px;border-radius: 50%;border: 1px solid #aaa;color: #aaa;}
+    .ma_center>i:hover{border: 1px solid #45C5F8;color: #45C5F8;}
+    .ma_center>i:first-child {top: 170px;}
+    .ma_center>i:last-child {position: absolute;bottom: 90px;top: auto;}
+    .ma_left>div, .ma_right>div {color: #2C2C2C;font-weight: bold;font-size: 14px;text-align: center;margin: 25px 0;}
+    .squear {width: 100%;height: 300px!important;margin-bottom: 35px;border: 1px solid #87DAFB;box-shadow: 1px 1px 10px rgba(135,218,251,0.5);display: block;}
+    .squear option {text-align: center;}
+    .myform_button{padding-top: 15px;}
+    .maintain>.mask_main{display: block;width: 1000px;}
+    .maintain .ma_right{width: 500px;height: 500px;}
+    .pull-right.search{margin-top: 0;}
+    .maintain .ma_right table th{text-align: center;height: 24px;background-color: #1199D3;}
+    .maintain .ma_right table th .th-inner{padding: 0!important;color: white;font-size: 14px;}
+    .maintain .ma_right table td{text-align: center;font-size: 14px;padding: 0!important;font-weight: normal;}
+    .maintain .ma_right table tr{cursor: pointer;}
+    .maintain .ma_right table tr.bg td{background-color: #BBBBBB;}
+    #group_name{font-size: 14px;}
+  </style>
+</head>
+<body>
+  <div id="header"></div>
+  <div id="nav"></div>
+  <div id="main">
+    <!-- 面包屑 -->
+    <ol class="breadcrumb">
+      <li><a href="cold.html">首页</a></li>
+      <li><a href="#">设备</a></li>
+      <li class="active">设备分组</li>
+    </ol>
+    <!-- 操作组 -->
+    <div id="operationGroup">
+      <span class="op_btn" onclick="addGroup()">添加</span>
+      <span class="op_btn" onclick="changeGroup()">修改</span>
+      <span class="op_btn" onclick="maintainGroup()">设备分组维护</span>
+      <span class="op_btn" onclick="emptyGroup()">清空分组内设备</span>
+      <span class="op_btn" onclick="group_delete()">删除</span>	
+    </div>
+    <!-- 表格 -->
+    <div class="indexTable">
+      <table id="indexTable" data-toggle="table"></table>
+    </div>
+    <!-- 弹框 -->
+    <div class="mask"></div>
+  </div>
+  <script>
+    $(function(){
+    	$('#home').prop('href',window.localStorage.getItem('homePage')+'.html')
+      // 初始化头部
+      new Header('#header');
+      // 初始化导航
+      new Nav('#nav');
+      // 分组表格
+      group_list();
+    })
+  </script>
+  <script>
+    var tableRow = null;
+    //分组表格
+    function group_list(){
+      $.ajax({
+        type : 'POST',
+        url : reqDomain + "/device/group_listing",
+        data: {},
+        dataType:"json",
+        xhrFields:{
+          withCredentials: true
+        },
+        success:function(data){
+          if(data.code == 200){
+            $("#indexTable").bootstrapTable("load",data.result);
+          }
+        }				
+      });
+    }
+    //分组表格
+    $('#indexTable').bootstrapTable({
+      sortable:true,
+      height: document.getElementsByTagName('body')[0].scrollHeight-200,
+      sortOrder:'id desc',
+      clickToSelect: true,
+      showExport: true,
+      search: true,
+      toolbar: '#operationGroup',
+      searchTimeOut: 700,
+      paginationLoop: true,
+      pageNumber: 1,
+      pageSize: 15,
+      exportDataType: 'all',
+      columns:[
+        {
+          title:'序号',
+          formatter: function(value, row, index) {
+            return index + 1;
+          },
+          width:'10%',
+        },
+        {
+          title:'名称',
+          field:'name',
+        },
+        {
+          title:'设备数量',
+          field:'box_num',
+          width:'15%',
+        },
+        {
+          title:'说明',
+          field:'remarks',
+        }
+      ]
+    });
+    $("#indexTable").on('click-row.bs.table', function(e, row, element) {
+      $(element).addClass('bg').siblings().removeClass('bg');
+      tableRow = row;
+    })
+    // 添加分组
+    function addGroup(){
+      $('.mask').show();
+      new AddGroup();
+    }
+    function AddGroup(){
+      this.init();
+    }
+    AddGroup.prototype.init = function(){
+      var div = document.createElement('div');
+      var str = '<div class="mask_title">修改分组<span class="close" onclick="closeMask()">×</span></div>';
+      str += '<div class="mask_main"><table class="mask_table"><tr><td>分组名称：</td><td><input type="text" class="form-control" id="groupName_add"></td></tr>';
+      str += '<tr><td>说明：</td><td><textarea class="form-control" rows="3" id="group_remarks_add"></textarea></td></tr></table><div class="myform_button"><button type="button" class="btn btn-info" onclick="groupAdd()">保存</button> </div></div>';  
+      div.innerHTML = str;
+      document.getElementsByClassName('mask')[0].appendChild(div);    
+    }
+    // 添加分组保存
+    function groupAdd(){
+      var boxIDs = [];
+      $.ajax({
+        type : 'POST',
+        url : reqDomain + "/device/group_save",
+        data: {
+          "remarks":$("#group_remarks_add").val(),
+          "name":$("#groupName_add").val()
+        },
+        dataType:"json",
+        xhrFields:{
+          withCredentials: true
+        },
+        success:function(data){
+          if(data.code == 200){
+            layer.alert('添加成功');
+            closeMask();
+            group_list();
+            tableRow = null;
+          }
+        }				
+      });
+    }
+    function changeGroup(){
+      if(tableRow == null){
+        layer.alert("请选择一个分组");
+      }else{
+        $('.mask').show();
+        new ChangeGroup(tableRow);
+      }
+    }
+    function ChangeGroup(opt){
+      this.name = opt.name;
+      this.remarks = opt.remarks;
+      this.id = opt.group_id;
+      this.init();
+    }
+    ChangeGroup.prototype.init = function(){
+      var div = document.createElement('div');
+      var str = '<div class="mask_title">修改分组<span class="close" onclick="closeMask()">×</span></div>';
+      str += '<div class="mask_main"><table class="mask_table"><tr><td>分组名称：</td><td><input type="text" class="form-control" id="groupName_edit" value="'+this.name+'"><input type="hidden" class="form-control" id="groupID" value="'+this.id+'"></td></tr>';
+      str += '<tr><td>说明：</td><td><textarea class="form-control" rows="3" id="remarks_edit">'+this.remarks+'</textarea></td></tr></table><div class="myform_button"><button type="button" class="btn btn-info" onclick="groupchange()">保存</button></div></div>';  
+      div.innerHTML = str;
+      document.getElementsByClassName('mask')[0].appendChild(div);   
+    }
+    // 保存分组修改
+    function groupchange(){
+      $.ajax({
+        async : false,
+        cache : false,
+        type : 'POST',
+        url : reqDomain + "/device/group_save",
+        data: {
+          "remarks":$('#remarks_edit').val(),
+          "name":$('#groupName_edit').val(),
+          'group_id':$('#groupID').val()
+        },
+        dataType:"json",
+        xhrFields:{
+          withCredentials: true
+        },
+        success:function(data){
+          if(data.code == 200){
+            layer.alert('修改成功');
+            closeMask();
+            group_list();
+            tableRow = null;
+          }
+        }				
+      });
+    }
+    // 设备分组维护
+    function maintainGroup(){
+      if(tableRow == null){
+        layer.alert("请选择一个设备");
+      }else{
+        $('.mask').show();
+        new MaintainGroup(tableRow);
+      }
+    }
+    function MaintainGroup(opt){
+      this.id = opt.group_id;
+      this.name = opt.name
+      this.init();
+    }
+    MaintainGroup.prototype.init = function(){
+      var div = document.createElement('div');
+      div.className = 'maintain';
+      var str = '<div class="mask_title">分组设备维护：<span id="group_name">'+this.name+'</span><span class="close" onclick="closeMask()">×</span></div>';
+      str += '<div class="mask_main"><div class="ma_left"><div>已有设备：</div><select class="squear" name="" id="group_box_list" multiple="multiple"></select></div>';
+      str += '<div class="ma_center"><i class="img_right glyphicon glyphicon-menu-right" onclick="toRight()"/></i><i class="img_left glyphicon glyphicon-menu-left" onclick="toLeft()"></i></div>';
+      str += '<div class="ma_right"><div>添加以下设备到分组：</div><table id="boxTable"></table></div>';
+      str += '<div class="myform_button"><button type="button" id="group_box_save" class="btn btn-info" onclick="maintainSave('+this.id+')">保存</button></div></div>';
+      div.innerHTML = str;
+      document.getElementsByClassName('mask')[0].appendChild(div);
+      group_box_list(this.id); 
+    }
+    function group_box_list(groupID){
+      var group_box_list = [];
+      var box_list_group = [];
+      var group_box_list_html = "";
+      var box_list_group_html = "";
+      $.ajax({
+        async : false,
+        cache : false,
+        type : 'POST',
+        url : reqDomain + "/device/box_list",
+        data: {
+          "group_id":groupID
+        },
+        dataType:"json",
+        xhrFields:{
+          withCredentials: true
+        },
+        success:function(data){
+          if(data.code == 200){
+            $('#boxTable').bootstrapTable('removeAll')
+            $('#boxTable').bootstrapTable({
+              height:300,
+              sortOrder: 'id desc',
+              search:true,
+              clickToSelect: true,
+              columns: [
+                {
+                  checkbox:true,
+                  field: 'checked',
+                },
+                {
+                  field: 'name',
+                  title: '箱号',
+                  align: 'center',
+                  valign: 'middle'
+                },{
+                  field: 'box_id',
+                  title: 'ID',
+                  align: 'center',
+                  valign: 'middle'
+                },{
+                  field: 'gorup_name',
+                  title: '所在分组',
+                  align: 'center',
+                  valign: 'middle',
+                  sortable:true
+                },{
+                  field: 'category',
+                  title: '设备类型',
+                  align: 'center',
+                  valign: 'middle',
+                  sortable: true,
+                  formatter: function(value){
+                    if(value == '01'){
+                      return '冷藏箱'
+                    }else if(value == '02'){
+                      return '保温箱'
+                    }else{
+                      return '保温车'
+                    }
+                  }
+                }
+              ]
+            })
+            group_box_list = data.result;
+            group_box_list.sort(up);
+          }
+        }				
+      });
+      $.ajax({
+        async : false,
+        cache : false,
+        type : 'POST',
+        url : reqDomain + "/device/box_list",
+        dataType:"json",
+        xhrFields:{
+          withCredentials: true
+        },
+        success:function(data){
+          if(data.code == 200){
+            box_list_group = data.result;	
+            box_list_group.sort(up);
+          }
+        }				
+      });
+      for(var i = 0;i < group_box_list.length;i++){
+        group_box_list_html+="<option value='"+group_box_list[i].box_id+"'>"+group_box_list[i].name+"</option>";
+        for(var z=0;z<box_list_group.length;z++){
+          if(box_list_group[z].box_id==group_box_list[i].box_id){
+            box_list_group.splice(z, 1);
+          }
+        }
+      }
+      for(var j = 0;j < box_list_group.length;j++){
+        box_list_group_html+="<option value='"+box_list_group[j].box_id+"'>"+box_list_group[j].name+"</option>";
+      }
+      $("#group_box_list").html(group_box_list_html);
+      $('#boxTable').bootstrapTable('load',box_list_group);
+      $('#boxTable').bootstrapTable('refresh');
+    }
+    // 设备分组维护保存
+    function maintainSave(id){
+      var boxIDs = [];
+      var list=$("#group_box_list option");
+      for(var i=0;i<list.length;i++){
+        boxIDs.push(list.eq(i).val());
+      }
+      $.ajax({
+        type : 'POST',
+        url : reqDomain + "/device/group_box_save",
+        data: {
+          "group_id":id,
+          "groupBoxIDs":boxIDs,
+          "exclusive": 1
+        },
+        dataType:"json",
+        xhrFields:{
+          withCredentials: true
+        },
+        success:function(data){
+          if(data.code == 200){
+            layer.alert("操作成功");
+            closeMask();
+            group_list();
+            tableRow = null;
+          }
+        }				
+      });
+    }
+    //分组设备添加删除
+    function toLeft(){
+      var data = null;
+      data = $('#boxTable').bootstrapTable('getSelections');
+      var box_ids = [];
+      if(data.length){
+        for(var i=0;i<data.length;i++){
+          $("#group_box_list").append('<option value="'+data[i].box_id+'">'+data[i].name+'</option>');
+          box_ids.push(data[i].box_id);
+        }
+        $('#boxTable').bootstrapTable('remove',{field: 'box_id', values: box_ids})
+      }
+    }
+    function toRight(){
+      var right = $('#group_box_list option:selected');
+      if(right.length){					
+        for(var i=0;i<right.length;i++){
+          var rigthName = right[i].innerHTML;
+          var rightVal = right[i].value;
+          var data = {
+            name:rigthName,
+            box_id:rightVal
+          }
+          $('#boxTable').bootstrapTable('append',data)
+        }
+      }
+      right.remove();
+    }
+    // 清空分组
+    function emptyGroup(){
+      if(tableRow==null){
+        layer.alert('请选择要清空的分组');
+      }
+      layer.confirm('确认要清空该分组吗?',function(){
+        $.ajax({
+          async : false,
+          cache : false,
+          type : 'POST',
+          url : reqDomain+"/device/group_box_clear",
+          data: {"group_id":tableRow.group_id},
+          dataType:"json",
+          xhrFields:{
+            withCredentials: true
+          },
+          success:function(data){
+            if(data.code == 200){
+              group_list();
+              tableRow = null;
+              layer.alert('清空成功！');
+            }
+          }				
+        });
+      })
+    }
+    // 删除分组
+    function group_delete(){
+      if(tableRow == null){
+        layer.alert("请选择一个设备");
+      }else{
+        layer.confirm('确认要清空该分组吗?',function(){
+          var groupID = tableRow.group_id;
+          $.ajax({
+            type : 'POST',
+            url : reqDomain + "/device/group_delete",
+            data: {
+              "group_id":groupID
+            },
+            dataType:"json",
+            xhrFields:{
+              withCredentials: true
+            },
+            success:function(data){
+              if(data.code == 200){
+                layer.alert('删除成功');
+                group_list();
+                tableRow = null;
+              }
+            }				
+          });
+        })
+      }
+    }
+    // 点击叉号
+    function closeMask(){
+      $('.mask').fadeOut(300);
+      $('.mask>div').remove();
+    }
+    // 排序
+    function up(x,y){
+      return x.name.substr(x.name.length-7)-y.name.substr(y.name.length-7);
+    }
+  </script>
+</body>
+</html>
